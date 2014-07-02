@@ -1,4 +1,8 @@
-Google Dataset Result
+##### :date: July 1, 2014
+<hr>
+
+
+The Google Dataset of Testing Results
 =====================
 Data Download and Preprocessing
 -------------------------------
@@ -12,177 +16,407 @@ sed -i '' '$ d' testShareData.csv.rev # removes the last line which is empty
 
 MySQL Database Schema and Import CSV File
 -----------------------------------------
-~~~sql
+
+:small_red_triangle_down: **Query Implementation:**
+
+~~~mysql
 CREATE TABLE `google_dataset` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `test_suite` VARCHAR(2048) NOT NULL DEFAULT '',
-  `change_request` VARCHAR(255) NOT NULL DEFAULT '',
-  `stage` VARCHAR(255) NOT NULL DEFAULT '',
-  `status` VARCHAR(255) NOT NULL DEFAULT '',
-  `launch_time` VARCHAR(255) NOT NULL DEFAULT '',
-  `execution_time` VARCHAR(255) NOT NULL DEFAULT '',
-  `size` VARCHAR(255) NOT NULL DEFAULT '',
-  `shard_number` INT(255) NOT NULL,
-  `run_number` INT(255) NOT NULL,
-  `language` VARCHAR(255) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-);
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `test_suite_mapped_id` varchar(255) DEFAULT NULL,
+  `test_suite` longtext,
+  `change_request` int(11) DEFAULT NULL,
+  `stage` varchar(255) DEFAULT NULL,
+  `test_status` varchar(255) DEFAULT NULL,
+  `launch_time` datetime DEFAULT NULL,
+  `execution_time` int(11) DEFAULT NULL,
+  `test_size` varchar(255) DEFAULT NULL,
+  `shard_number` int(11) DEFAULT NULL,
+  `run_number` int(11) DEFAULT NULL,
+  `test_language` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `change_request_idx` (`change_request`) USING BTREE,
+  KEY `shard_number_idx` (`shard_number`) USING BTREE,
+  KEY `stage_idx` (`stage`) USING BTREE,
+  KEY `test_status_idx` (`test_status`) USING BTREE,
+  KEY `test_language_idx` (`test_language`) USING BTREE,
+  KEY `test_size_idx` (`test_size`) USING BTREE,
+  KEY `test_suite_mapped_id_idx` (`test_suite_mapped_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=3468949 DEFAULT CHARSET=utf8;
+
 LOAD DATA INFILE '/path/to/testShareData.csv.rev' INTO TABLE google_dataset \
 FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' \
-(test_suite, change_request, stage, status, launch_time, execution_time, size, shard_number, run_number, language);
+(id, change_request, execution_time, launch_time, run_number, shard_number, stage, test_language, test_size, test_status, test_suite, test_suite_mapped_id);
+
 -- Query OK, 3468948 rows affected (1 min 34.64 sec)
 -- Records: 3468948  Deleted: 0  Skipped: 0  Warnings: 0
+
+CREATE INDEX test_suite_mapped_id_idx ON google_dataset (test_suite_mapped_id) USING BTREE;
+CREATE INDEX change_request_idx ON google_dataset (change_request) USING BTREE;
+CREATE INDEX shard_number_idx ON google_dataset (shard_number) USING BTREE;
+CREATE INDEX stage_idx ON google_dataset (stage) USING BTREE;
+CREATE INDEX test_size_idx ON google_dataset (test_size) USING BTREE;
+CREATE INDEX test_status_idx ON google_dataset (test_status) USING BTREE;
+CREATE INDEX test_language_idx ON google_dataset (test_language) USING BTREE;
 ~~~
 
 
-Paragraphs are separated by a blank line.
+Dataset Analysis
+-------------
 
-2nd paragraph. *Italic*, **bold**, and `monospace`. Itemized lists
-look like:
+* Total Distinct Test_Suites are: **5555**
 
-  * this one
-  * that one
-  * the other one
+:small_red_triangle_down: **Query Implementation:**
 
-> Block quotes are
-> written like so.
->
-> They can span multiple paragraphs,
-> if you like.
-
-Use 3 dashes for an em-dash. Use 2 dashes for ranges (ex., "it's all
-in chapters 12--14"). Three dots ... will be converted to an ellipsis.
-
-
-
-An h2 header
-------------
-
-Here's a numbered list:
-
- 1. first item
- 2. second item
- 3. third item
-
-Note again how the actual text starts at 4 columns in (4 characters
-from the left side). Here's a code sample:
-
-    # Let me re-iterate ...
-    for i in 1 .. 10 { do-something(i) }
-
-As you probably guessed, indented 4 spaces. By the way, instead of
-indenting the block, you can use delimited blocks, if you like:
-
-~~~
-define foobar() {
-    print "Welcome to flavor country!";
-}
+~~~ mysql
+        SELECT COUNT(DISTINCT test_suite_mapped_id) AS distinct_test_suits 
+        FROM google_dataset;
 ~~~
 
-(which makes copying & pasting easier). You can optionally mark the
-delimited block for Pandoc to syntax highlight it:
+<br/>
+
+* There are also **3468948** records in the entire dataset
+
+:small_red_triangle_down: **Query Implementation:**
+~~~ mysql
+
+        SELECT COUNT(*) total_records FROM google_dataset;
+~~~
+
+<br/>
+
+* There are total of **169** different TEST_SUITES with partitioned executions
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~ mysql
+
+        SELECT COUNT(DISTINCT test_suite) AS test_suites
+        FROM   google_dataset
+        WHERE  shard_number IN (SELECT shard_number
+                                FROM   google_dataset
+                                WHERE  shard_number > 1);
+~~~
+
+<br/>
+
+
+* There are total of **4520** different change request during ECT Phase
+* There are total of **1693** different change request during ICT Phase
+
+:small_red_triangle_down: **MySQLImplementation:**
+
+~~~ mysql
+SELECT Count(*) AS total_change_requests, stage
+ FROM (SELECT Count(change_request) AS change_request_count, IF(stage="POST", "ECT phase",stage) AS stage
+        FROM  google_dataset d
+        WHERE 1 = 1
+          AND stage = "POST"
+     GROUP BY change_request) AS T
+UNION
+SELECT Count(*) AS total_change_requests,
+       stage
+  FROM (SELECT Count(change_request) AS change_request_count, IF(stage="PRES", "ICT phase",stage) AS stage
+          FROM google_datasetT d
+         WHERE 1 = 1
+           AND stage = "PRES"
+      GROUP BY change_request) AS T
+~~~
+
+:small_red_triangle_down: **Query Results:**
+
+| total_change_requests | stage      |
+|-----------------------|:----------:|
+| 4520                  |  ECT phase |
+| 1693                  |  ICT phase |
+
+
+<br>
+
+* Flaky Tests Results (Flaky_Tests_Results.sql)
+
+:small_red_triangle_down: **MySQL Implementation (Not Working Because of Performance Issues):**
+
+~~~ mysql
+SELECT
+  DISTINCT test_suite_mapped_id,
+  change_request,
+  shard_number,
+  failed,
+  passed,
+  flaky_percent,
+  max_launch_time,
+  min_launch_time  
+FROM
+(   
+    SELECT
+    test_suite_mapped_id,
+    change_request,
+    shard_number,
+    SUM(IF(UPPER(test_status) = "FAILED",1,0)) AS failed,
+    SUM(IF(UPPER(test_status) = "PASSED",1,0)) AS passed,
+    (SUM(IF(UPPER(test_status) = "FAILED",1,0)*100/((SELECT COUNT(test_status) * 1.0 
+                                                       FROM google_dataset d2
+                                                      WHERE d2.test_suite_mapped_id = d1.test_suite_mapped_id      
+                                                        AND d2.change_request = d1.change_request) * 1.0))) AS flaky_percent,
+    MAX(launch_time) AS max_launch_time,
+    MIN(launch_time) AS min_launch_time       
+  FROM
+    google_dataset d1    
+  WHERE
+    UPPER(STAGE) = "POST"    
+  GROUP BY
+    test_suite,change_request,shard_number
+) AS T  
+  WHERE
+    failed > 0 AND passed > 0    
+  ORDER BY
+    test_suite_mapped_id, change_request,shard_number ASC;
+~~~
+
+:bulb: **Note** There are **154** test suites that are evaluated as flaky
+
+ :pushpin: Therefore, there are **1691 flaky_tests** from total of **3468948**, that means that **0.0487%** of overall tests are evaluated as flaky from  **154** different test_suites
+
+### Categorization Of Data
+
+:bulb: Note: To retrieve the results, I have implemented a python script as shown below:
+
+
+<hr>
+
+* Categorization by **Language & Size** (3.2. categorize_by_lang_and_size.py)
+
+<hr>
+
+:small_red_triangle_down: **Python Implementation:**
+
+~~~ python
+import pymysql
+import pdb
+
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='*******', db='google')
+
+iterator = conn.cursor()
+
+iterator.execute("SELECT * FROM google_dataset GROUP BY test_language, test_size") 
+
+records = []
+
+for row in iterator:
+  records.append(row)
+
+iterator.close()
+
+for record in records:
+  test_language = record[7]
+  test_size = record[8]
+
+  lang_cursor = conn.cursor() 
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND test_size = '%s'" % (test_language, test_size))
+
+  recs = []
+  for row in lang_cursor:
+    recs.append(row) 
+
+  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
+  total_records = float(len(recs))
+
+  if total_failure != 0:
+    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), recs)) / float(len(recs))
+  else:
+    avg_exec_time = 0 
+
+  print test_language + "\t" + test_size + "\t" + str(total_failure) + "\t" + str((100.0 * total_failure) / total_records) + "\t" + str(avg_exec_time)
+  lang_cursor.close()
+
+conn.close()  
+~~~
+
+
+* Graph: Categorization By Language & Size (data_categorization.xsls)
+
+:small_red_triangle_down: **Python Results:**
+
+![Alt text](lang_vs_size.jpeg)
+
+
+<br>
+
+<hr>
+
+* Categorization by **Language & Size** (3.1. categorize_by_lang_and_stage.py)
+
+<hr>
+
+:small_red_triangle_down: **Python Implementation:**
 
 ~~~python
-import time
-# Quick, count to ten!
-for i in range(10):
-    # (but not *too* quick)
-    time.sleep(0.5)
-    print i
+import pymysql
+import pdb
+
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='*****', db='google')
+
+iterator = conn.cursor()
+
+iterator.execute("SELECT * FROM google_dataset GROUP BY test_language, stage") 
+
+records = []
+
+for row in iterator:
+  records.append(row)
+
+iterator.close()
+
+for record in records:
+  test_language = record[7]
+  stage = record[6]
+
+  lang_cursor = conn.cursor() 
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND stage = '%s'" % (test_language, stage))
+
+  recs = []
+  for row in lang_cursor:
+    recs.append(row) 
+
+  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
+  total_records = float(len(recs))
+
+  if total_failure != 0:
+    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), filter(lambda x: x[9] == "FAILED", recs))) / float(len(recs))
+  else:
+    avg_exec_time = 0
+
+  print test_language + "\t" + stage + "\t" + str(total_failure) + "\t" + str((100.0 * total_failure) / total_records) + "\t" + str(avg_exec_time)
+  lang_cursor.close()
+
+conn.close()  
 ~~~
 
 
+* Graph: Categorization By **Language & Stage** (data_categorization.xsls)
 
-### An h3 header ###
+:small_red_triangle_down: **Python Results:**
 
-Now a nested list:
+![Alt text](lang_vs_stage.jpeg)
 
- 1. First, get these ingredients:
+<br>
 
-      * carrots
-      * celery
-      * lentils
+<hr>
 
- 2. Boil some water.
+* Categorization by **Language** (2.1. categorize_by_lang.py)
 
- 3. Dump everything in the pot and follow
-    this algorithm:
+<hr>
 
-        find wooden spoon
-        uncover pot
-        stir
-        cover pot
-        balance wooden spoon precariously on pot handle
-        wait 10 minutes
-        goto first step (or shut off burner when done)
+:small_red_triangle_down: **Pyhton Implementation:**
 
-    Do not bump wooden spoon or it will fall.
+~~~python
+import pymysql
+import pdb
 
-Notice again how text always lines up on 4-space indents (including
-that last line which continues item 3 above). Here's a link to [a
-website](http://foo.bar). Here's a link to a [local
-doc](local-doc.html). Here's a footnote [^1].
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='*****', db='google')
 
-[^1]: Footnote text goes here.
+iterator = conn.cursor()
 
-Tables can look like this:
+iterator.execute("SELECT * FROM google_dataset GROUP BY test_language") 
 
-size  material      color
-----  ------------  ------------
-9     leather       brown
-10    hemp canvas   natural
-11    glass         transparent
+records = []
 
-Table: Shoes, their sizes, and what they're made of
+for row in iterator:
+  records.append(row)
 
-(The above is the caption for the table.) Pandoc also supports
-multi-line tables:
+iterator.close()
 
---------  -----------------------
-keyword   text
---------  -----------------------
-red       Sunsets, apples, and
-          other red or reddish
-          things.
+for record in records:
+  test_language = record[7]
 
-green     Leaves, grass, frogs
-          and other things it's
-          not easy being.
---------  -----------------------
 
-A horizontal rule follows.
+  lang_cursor = conn.cursor() 
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s'" % test_language)
 
-***
+  recs = []
+  for row in lang_cursor:
+    recs.append(row) 
 
-Here's a definition list:
+  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
+  total_records = float(len(recs))
 
-apples
-  : Good for making applesauce.
-oranges
-  : Citrus!
-tomatoes
-  : There's no "e" in tomatoe.
+  if total_failure != 0:
+    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), recs)) / float(len(recs))
+  else:
+    avg_exec_time = 0
 
-Again, text is indented 4 spaces. (Alternately, put blank lines in
-between each of the above definition list lines to spread things
-out more.)
+  print test_language + "\t" + str(total_failure) + "\t" + str((100.0 * total_failure) / total_records) + "\t" + str(avg_exec_time)
+  lang_cursor.close()
 
-Here's a "line block":
+conn.close()  
+~~~
 
-| Line one
-|   Line too
-| Line tree
 
-and images can be specified like so:
+* Graph: Categorization By **Language** (data_categorization.xsls)
 
-![example image](example-image.jpg "An exemplary image")
+:small_red_triangle_down: **Python Results:**
 
-Inline math equations go in like so: $\omega = d\phi / dt$. Display
-math should get its own line and be put in in double-dollarsigns:
+![Alt text](language.jpeg)
 
-$$I = \int \rho R^{2} dV$$
+<br>
 
-And note that you can backslash-escape any punctuation characters
-which you wish to be displayed literally, ex.: \`foo\`, \*bar\*, etc.
+<hr>
 
-Done.
+* Categorization by **Size** (2.2. categorize_by_lang.py)
+
+<hr>
+
+:small_red_triangle_down: **Pyhton Implementation:**
+
+~~~python
+import pymysql
+import pdb
+
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='*****', db='google')
+
+iterator = conn.cursor()
+
+iterator.execute("SELECT * FROM google_dataset GROUP BY test_size") 
+
+records = []
+
+for row in iterator:
+  records.append(row)
+
+iterator.close()
+
+for record in records:
+  test_size = record[8]
+
+
+  lang_cursor = conn.cursor() 
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_size = '%s'" % test_size)
+
+  recs = []
+  for row in lang_cursor:
+    recs.append(row) 
+
+  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
+  total_records = float(len(recs))
+
+  if total_failure != 0:
+    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), recs)) / float(len(recs))
+  else:
+    avg_exec_time = 0 
+
+  print test_size + "\t" + str(total_failure) + "\t" + str((100.0 * total_failure) / total_records) + "\t" + str(avg_exec_time)
+  lang_cursor.close()
+
+conn.close()  
+~~~
+
+
+* Graph: Categorization By Language(data_categorization.xsls)
+
+:small_red_triangle_down: **Python Results:**
+
+![Alt text](size.jpeg)
+
+<br>
+
+:copyright: Rrezarta Krasniqi
