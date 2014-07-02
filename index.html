@@ -749,8 +749,11 @@ body .task-list{
 .type-csharp .highlight .sc{
   color:#A31515
 }
-</style><title>report</title></head><body><h1>
-<a name="user-content-google-dataset-result" class="anchor" href="#google-dataset-result" aria-hidden="true"><span class="octicon octicon-link"></span></a>Google Dataset Result</h1>
+</style><title>report</title></head><body><h5>
+<a name="user-content-date-july-1-2014" class="anchor" href="#date-july-1-2014" aria-hidden="true"><span class="octicon octicon-link"></span></a><img class="emoji" title=":date:" alt=":date:" src="https://assets-cdn.github.com/images/icons/emoji/date.png" height="20" width="20" align="absmiddle"> July 1, 2014</h5>
+
+<hr><h1>
+<a name="user-content-the-google-dataset-of-testing-results" class="anchor" href="#the-google-dataset-of-testing-results" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Google Dataset of Testing Results</h1>
 
 <h2>
 <a name="user-content-data-download-and-preprocessing" class="anchor" href="#data-download-and-preprocessing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data Download and Preprocessing</h2>
@@ -765,175 +768,384 @@ sed -i <span class="s1">''</span> <span class="s1">'$ d'</span> testShareData.cs
 <h2>
 <a name="user-content-mysql-database-schema-and-import-csv-file" class="anchor" href="#mysql-database-schema-and-import-csv-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>MySQL Database Schema and Import CSV File</h2>
 
-<div class="highlight highlight-sql"><pre><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="o">`</span><span class="n">google_dataset</span><span class="o">`</span> <span class="p">(</span>
-  <span class="o">`</span><span class="n">id</span><span class="o">`</span> <span class="nb">INT</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
-  <span class="o">`</span><span class="n">test_suite</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">2048</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s1">''</span><span class="p">,</span>
-  <span class="o">`</span><span class="n">change_request</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s1">''</span><span class="p">,</span>
-  <span class="o">`</span><span class="n">stage</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s1">''</span><span class="p">,</span>
-  <span class="o">`</span><span class="n">status</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s1">''</span><span class="p">,</span>
-  <span class="o">`</span><span class="n">launch_time</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s1">''</span><span class="p">,</span>
-  <span class="o">`</span><span class="n">execution_time</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s1">''</span><span class="p">,</span>
-  <span class="o">`</span><span class="k">size</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s1">''</span><span class="p">,</span>
-  <span class="o">`</span><span class="n">shard_number</span><span class="o">`</span> <span class="nb">INT</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
-  <span class="o">`</span><span class="n">run_number</span><span class="o">`</span> <span class="nb">INT</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
-  <span class="o">`</span><span class="k">language</span><span class="o">`</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="s1">''</span><span class="p">,</span>
-  <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span>
-<span class="p">);</span>
-<span class="k">LOAD</span> <span class="k">DATA</span> <span class="n">INFILE</span> <span class="s1">'/path/to/testShareData.csv.rev'</span> <span class="k">INTO</span> <span class="k">TABLE</span> <span class="n">google_dataset</span> <span class="err">\</span>
-<span class="n">FIELDS</span> <span class="n">TERMINATED</span> <span class="k">BY</span> <span class="s1">','</span> <span class="n">LINES</span> <span class="n">TERMINATED</span> <span class="k">BY</span> <span class="s1">'\n'</span> <span class="err">\</span>
-<span class="p">(</span><span class="n">test_suite</span><span class="p">,</span> <span class="n">change_request</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">launch_time</span><span class="p">,</span> <span class="n">execution_time</span><span class="p">,</span> <span class="k">size</span><span class="p">,</span> <span class="n">shard_number</span><span class="p">,</span> <span class="n">run_number</span><span class="p">,</span> <span class="k">language</span><span class="p">);</span>
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Query Implementation:</strong></p>
+
+<div class="highlight highlight-mysql"><pre><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="ss">`google_dataset`</span> <span class="p">(</span>
+  <span class="ss">`id`</span> <span class="kt">bigint</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="k">NOT</span> <span class="no">NULL</span> <span class="kp">AUTO_INCREMENT</span><span class="p">,</span>
+  <span class="ss">`test_suite_mapped_id`</span> <span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`test_suite`</span> <span class="kt">longtext</span><span class="p">,</span>
+  <span class="ss">`change_request`</span> <span class="kt">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`stage`</span> <span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`test_status`</span> <span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`launch_time`</span> <span class="kt">datetime</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`execution_time`</span> <span class="kt">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`test_size`</span> <span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`shard_number`</span> <span class="kt">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`run_number`</span> <span class="kt">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`test_language`</span> <span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="ss">`id`</span><span class="p">),</span>
+  <span class="k">KEY</span> <span class="ss">`change_request_idx`</span> <span class="p">(</span><span class="ss">`change_request`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">,</span>
+  <span class="k">KEY</span> <span class="ss">`shard_number_idx`</span> <span class="p">(</span><span class="ss">`shard_number`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">,</span>
+  <span class="k">KEY</span> <span class="ss">`stage_idx`</span> <span class="p">(</span><span class="ss">`stage`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">,</span>
+  <span class="k">KEY</span> <span class="ss">`test_status_idx`</span> <span class="p">(</span><span class="ss">`test_status`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">,</span>
+  <span class="k">KEY</span> <span class="ss">`test_language_idx`</span> <span class="p">(</span><span class="ss">`test_language`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">,</span>
+  <span class="k">KEY</span> <span class="ss">`test_size_idx`</span> <span class="p">(</span><span class="ss">`test_size`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">,</span>
+  <span class="k">KEY</span> <span class="ss">`test_suite_mapped_id_idx`</span> <span class="p">(</span><span class="ss">`test_suite_mapped_id`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span>
+<span class="p">)</span> <span class="kp">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span> <span class="kp">AUTO_INCREMENT</span><span class="o">=</span><span class="mi">3468949</span> <span class="k">DEFAULT</span> <span class="kp">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span>
+
+<span class="k">LOAD</span> <span class="n">DATA</span> <span class="k">INFILE</span> <span class="s1">'/path/to/testShareData.csv.rev'</span> <span class="k">INTO</span> <span class="k">TABLE</span> <span class="n">google_dataset</span> <span class="err">\</span>
+<span class="n">FIELDS</span> <span class="k">TERMINATED</span> <span class="k">BY</span> <span class="s1">','</span> <span class="k">LINES</span> <span class="k">TERMINATED</span> <span class="k">BY</span> <span class="s1">'\n'</span> <span class="err">\</span>
+<span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">change_request</span><span class="p">,</span> <span class="n">execution_time</span><span class="p">,</span> <span class="n">launch_time</span><span class="p">,</span> <span class="n">run_number</span><span class="p">,</span> <span class="n">shard_number</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">test_language</span><span class="p">,</span> <span class="n">test_size</span><span class="p">,</span> <span class="n">test_status</span><span class="p">,</span> <span class="n">test_suite</span><span class="p">,</span> <span class="n">test_suite_mapped_id</span><span class="p">);</span>
+
 <span class="c1">-- Query OK, 3468948 rows affected (1 min 34.64 sec)</span>
 <span class="c1">-- Records: 3468948  Deleted: 0  Skipped: 0  Warnings: 0</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">test_suite_mapped_id_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">test_suite_mapped_id</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">change_request_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">shard_number_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">shard_number</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">stage_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">stage</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">test_size_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">test_size</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">test_status_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">test_status</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">test_language_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">test_language</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
 </pre></div>
-
-<p>Paragraphs are separated by a blank line.</p>
-
-<p>2nd paragraph. <em>Italic</em>, <strong>bold</strong>, and <code>monospace</code>. Itemized lists
-look like:</p>
-
-<ul>
-<li>this one</li>
-<li>that one</li>
-<li>the other one</li>
-</ul><blockquote>
-<p>Block quotes are
-written like so.</p>
-
-<p>They can span multiple paragraphs,
-if you like.</p>
-</blockquote>
-
-<p>Use 3 dashes for an em-dash. Use 2 dashes for ranges (ex., "it's all
-in chapters 12--14"). Three dots ... will be converted to an ellipsis.</p>
 
 <h2>
-<a name="user-content-an-h2-header" class="anchor" href="#an-h2-header" aria-hidden="true"><span class="octicon octicon-link"></span></a>An h2 header</h2>
-
-<p>Here's a numbered list:</p>
-
-<ol>
-<li>first item</li>
-<li>second item</li>
-<li>third item</li>
-</ol><p>Note again how the actual text starts at 4 columns in (4 characters
-from the left side). Here's a code sample:</p>
-
-<pre><code># Let me re-iterate ...
-for i in 1 .. 10 { do-something(i) }
-</code></pre>
-
-<p>As you probably guessed, indented 4 spaces. By the way, instead of
-indenting the block, you can use delimited blocks, if you like:</p>
-
-<pre><code>define foobar() {
-    print "Welcome to flavor country!";
-}
-</code></pre>
-
-<p>(which makes copying &amp; pasting easier). You can optionally mark the
-delimited block for Pandoc to syntax highlight it:</p>
-
-<div class="highlight highlight-python"><pre><span class="kn">import</span> <span class="nn">time</span>
-<span class="c"># Quick, count to ten!</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-    <span class="c"># (but not *too* quick)</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-    <span class="k">print</span> <span class="n">i</span>
-</pre></div>
-
-<h3>
-<a name="user-content-an-h3-header" class="anchor" href="#an-h3-header" aria-hidden="true"><span class="octicon octicon-link"></span></a>An h3 header</h3>
-
-<p>Now a nested list:</p>
-
-<ol>
-<li>
-<p>First, get these ingredients:</p>
+<a name="user-content-dataset-analysis" class="anchor" href="#dataset-analysis" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dataset Analysis</h2>
 
 <ul>
-<li>carrots</li>
-<li>celery</li>
-<li>lentils</li>
-</ul>
+<li>Total Distinct Test_Suites are: <strong>5555</strong>
 </li>
-</ol><ol>
-<li><p>Boil some water.</p></li>
-<li>
-<p>Dump everything in the pot and follow
-this algorithm:</p>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Query Implementation:</strong></p>
 
-<pre><code>find wooden spoon
-uncover pot
-stir
-cover pot
-balance wooden spoon precariously on pot handle
-wait 10 minutes
-goto first step (or shut off burner when done)
-</code></pre>
+<div class="highlight highlight-mysql"><pre>        <span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="n">test_suite_mapped_id</span><span class="p">)</span> <span class="k">AS</span> <span class="n">distinct_test_suits</span> 
+        <span class="k">FROM</span> <span class="n">google_dataset</span><span class="p">;</span>
+</pre></div>
 
-<p>Do not bump wooden spoon or it will fall.</p>
-</li>
-</ol><p>Notice again how text always lines up on 4-space indents (including
-that last line which continues item 3 above). Here's a link to <a href="http://foo.bar">a
-website</a>. Here's a link to a <a href="file:///Users/rkrasniq/git/rrezarta-krasniqi.github.io/local-doc.html">local
-doc</a>. Here's a footnote [^1].</p>
+<p><br></p>
 
-<p>[^1]: Footnote text goes here.</p>
+<ul>
+<li>There are also <strong>3468948</strong> records in the entire dataset</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Query Implementation:</strong></p>
 
-<p>Tables can look like this:</p>
+<div class="highlight highlight-mysql"><pre>
+        <span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="n">total_records</span> <span class="k">FROM</span> <span class="n">google_dataset</span><span class="p">;</span>
+</pre></div>
 
-<p>size  material      color</p>
+<p><br></p>
 
-<hr><p>9     leather       brown
-10    hemp canvas   natural
-11    glass         transparent</p>
+<ul>
+<li>There are total of <strong>169</strong> different TEST_SUITES with partitioned executions</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>MySQL Implementation:</strong></p>
 
-<p>Table: Shoes, their sizes, and what they're made of</p>
+<div class="highlight highlight-mysql"><pre>
+        <span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="n">test_suite</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_suites</span>
+        <span class="k">FROM</span>   <span class="n">google_dataset</span>
+        <span class="k">WHERE</span>  <span class="n">shard_number</span> <span class="k">IN</span> <span class="p">(</span><span class="k">SELECT</span> <span class="n">shard_number</span>
+                                <span class="k">FROM</span>   <span class="n">google_dataset</span>
+                                <span class="k">WHERE</span>  <span class="n">shard_number</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">);</span>
+</pre></div>
 
-<p>(The above is the caption for the table.) Pandoc also supports
-multi-line tables:</p>
+<p><br></p>
 
-<hr><p>keyword   text</p>
+<ul>
+<li>There are total of <strong>4520</strong> different change request during ECT Phase</li>
+<li>There are total of <strong>1693</strong> different change request during ICT Phase</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>MySQLImplementation:</strong></p>
 
-<hr><p>red       Sunsets, apples, and
-          other red or reddish
-          things.</p>
+<div class="highlight highlight-mysql"><pre><span class="k">SELECT</span> <span class="nf">Count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="k">AS</span> <span class="n">total_change_requests</span><span class="p">,</span> <span class="n">stage</span>
+ <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="nf">Count</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">change_request_count</span><span class="p">,</span> <span class="k">IF</span><span class="p">(</span><span class="n">stage</span><span class="o">=</span><span class="s2">"POST"</span><span class="p">,</span> <span class="s2">"ECT phase"</span><span class="p">,</span><span class="n">stage</span><span class="p">)</span> <span class="k">AS</span> <span class="n">stage</span>
+        <span class="k">FROM</span>  <span class="n">google_dataset</span> <span class="n">d</span>
+        <span class="k">WHERE</span> <span class="mi">1</span> <span class="o">=</span> <span class="mi">1</span>
+          <span class="k">AND</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+     <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">T</span>
+<span class="k">UNION</span>
+<span class="k">SELECT</span> <span class="nf">Count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="k">AS</span> <span class="n">total_change_requests</span><span class="p">,</span>
+       <span class="n">stage</span>
+  <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="nf">Count</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">change_request_count</span><span class="p">,</span> <span class="k">IF</span><span class="p">(</span><span class="n">stage</span><span class="o">=</span><span class="s2">"PRES"</span><span class="p">,</span> <span class="s2">"ICT phase"</span><span class="p">,</span><span class="n">stage</span><span class="p">)</span> <span class="k">AS</span> <span class="n">stage</span>
+          <span class="k">FROM</span> <span class="n">google_datasetT</span> <span class="n">d</span>
+         <span class="k">WHERE</span> <span class="mi">1</span> <span class="o">=</span> <span class="mi">1</span>
+           <span class="k">AND</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"PRES"</span>
+      <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">T</span>
+</pre></div>
 
-<p>green     Leaves, grass, frogs
-          and other things it's
-          not easy being.</p>
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Query Results:</strong></p>
 
-<hr><p>A horizontal rule follows.</p>
+<table>
+<thead><tr>
+<th>total_change_requests</th>
+<th align="center">stage</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>4520</td>
+<td align="center">ECT phase</td>
+</tr>
+<tr>
+<td>1693</td>
+<td align="center">ICT phase</td>
+</tr>
+</tbody>
+</table><p><br></p>
 
-<hr><p>Here's a definition list:</p>
+<ul>
+<li>Flaky Tests Results (Flaky_Tests_Results.sql)</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>MySQL Implementation (Not Working Because of Performance Issues):</strong></p>
 
-<p>apples
-  : Good for making applesauce.
-oranges
-  : Citrus!
-tomatoes
-  : There's no "e" in tomatoe.</p>
+<div class="highlight highlight-mysql"><pre><span class="k">SELECT</span>
+  <span class="k">DISTINCT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+  <span class="n">change_request</span><span class="p">,</span>
+  <span class="n">shard_number</span><span class="p">,</span>
+  <span class="n">failed</span><span class="p">,</span>
+  <span class="n">passed</span><span class="p">,</span>
+  <span class="n">flaky_percent</span><span class="p">,</span>
+  <span class="n">max_launch_time</span><span class="p">,</span>
+  <span class="n">min_launch_time</span>  
+<span class="k">FROM</span>
+<span class="p">(</span>   
+    <span class="k">SELECT</span>
+    <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+    <span class="n">change_request</span><span class="p">,</span>
+    <span class="n">shard_number</span><span class="p">,</span>
+    <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="nf">UPPER</span><span class="p">(</span><span class="n">test_status</span><span class="p">)</span> <span class="o">=</span> <span class="s2">"FAILED"</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span>
+    <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="nf">UPPER</span><span class="p">(</span><span class="n">test_status</span><span class="p">)</span> <span class="o">=</span> <span class="s2">"PASSED"</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span><span class="p">,</span>
+    <span class="p">(</span><span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="nf">UPPER</span><span class="p">(</span><span class="n">test_status</span><span class="p">)</span> <span class="o">=</span> <span class="s2">"FAILED"</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="o">/</span><span class="p">((</span><span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="n">test_status</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span> 
+                                                       <span class="k">FROM</span> <span class="n">google_dataset</span> <span class="n">d2</span>
+                                                      <span class="k">WHERE</span> <span class="n">d2</span><span class="p">.</span><span class="n">test_suite_mapped_id</span> <span class="o">=</span> <span class="n">d1</span><span class="p">.</span><span class="n">test_suite_mapped_id</span>      
+                                                        <span class="k">AND</span> <span class="n">d2</span><span class="p">.</span><span class="n">change_request</span> <span class="o">=</span> <span class="n">d1</span><span class="p">.</span><span class="n">change_request</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">)))</span> <span class="k">AS</span> <span class="n">flaky_percent</span><span class="p">,</span>
+    <span class="nf">MAX</span><span class="p">(</span><span class="n">launch_time</span><span class="p">)</span> <span class="k">AS</span> <span class="n">max_launch_time</span><span class="p">,</span>
+    <span class="nf">MIN</span><span class="p">(</span><span class="n">launch_time</span><span class="p">)</span> <span class="k">AS</span> <span class="n">min_launch_time</span>       
+  <span class="k">FROM</span>
+    <span class="n">google_dataset</span> <span class="n">d1</span>    
+  <span class="k">WHERE</span>
+    <span class="nf">UPPER</span><span class="p">(</span><span class="n">STAGE</span><span class="p">)</span> <span class="o">=</span> <span class="s2">"POST"</span>    
+  <span class="k">GROUP</span> <span class="k">BY</span>
+    <span class="n">test_suite</span><span class="p">,</span><span class="n">change_request</span><span class="p">,</span><span class="n">shard_number</span>
+<span class="p">)</span> <span class="k">AS</span> <span class="n">T</span>  
+  <span class="k">WHERE</span>
+    <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span>    
+  <span class="k">ORDER</span> <span class="k">BY</span>
+    <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span><span class="p">,</span><span class="n">shard_number</span> <span class="k">ASC</span><span class="p">;</span>
+</pre></div>
 
-<p>Again, text is indented 4 spaces. (Alternately, put blank lines in
-between each of the above definition list lines to spread things
-out more.)</p>
+<p><img class="emoji" title=":bulb:" alt=":bulb:" src="https://assets-cdn.github.com/images/icons/emoji/bulb.png" height="20" width="20" align="absmiddle"><strong>Note</strong> There are <strong>154</strong> test suites that are evaluated as flaky</p>
 
-<p>Here's a "line block":</p>
+<p><img class="emoji" title=":pushpin:" alt=":pushpin:" src="https://assets-cdn.github.com/images/icons/emoji/pushpin.png" height="20" width="20" align="absmiddle"> Therefore, there are <strong>1691 flaky_tests</strong> from total of <strong>3468948</strong>, that means that <strong>0.0487%</strong> of overall tests are evaluated as flaky from  <strong>154</strong> different test_suites</p>
 
-<p>| Line one
-|   Line too
-| Line tree</p>
+<h3>
+<a name="user-content-categorization-of-data" class="anchor" href="#categorization-of-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Categorization Of Data</h3>
 
-<p>and images can be specified like so:</p>
+<p><img class="emoji" title=":bulb:" alt=":bulb:" src="https://assets-cdn.github.com/images/icons/emoji/bulb.png" height="20" width="20" align="absmiddle"> Note: To retrieve the results, I have implemented a python script as shown below:</p>
 
-<p><a href="file:///Users/rkrasniq/git/rrezarta-krasniqi.github.io/example-image.jpg" target="_blank"><img src="file:///Users/rkrasniq/git/rrezarta-krasniqi.github.io/example-image.jpg" alt="example image" title="An exemplary image" style="max-width:100%;"></a></p>
+<hr><ul>
+<li>Categorization by <strong>Language &amp; Size</strong> (3.2. categorize_by_lang_and_size.py)</li>
+</ul><hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Python Implementation:</strong></p>
 
-<p>Inline math equations go in like so: $\omega = d\phi / dt$. Display
-math should get its own line and be put in in double-dollarsigns:</p>
+<div class="highlight highlight-python"><pre><span class="kn">import</span> <span class="nn">pymysql</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
 
-<p>$$I = \int \rho R^{2} dV$$</p>
+<span class="n">conn</span> <span class="o">=</span> <span class="n">pymysql</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">'127.0.0.1'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">'root'</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="s">'*******'</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s">'google'</span><span class="p">)</span>
 
-<p>And note that you can backslash-escape any punctuation characters
-which you wish to be displayed literally, ex.: `foo`, *bar*, etc.</p>
+<span class="n">iterator</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 
-<p>Done.</p></body></html>
+<span class="n">iterator</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset GROUP BY test_language, test_size"</span><span class="p">)</span> 
+
+<span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+  <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+<span class="n">iterator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+  <span class="n">test_language</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+  <span class="n">test_size</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
+
+  <span class="n">lang_cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> 
+  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE test_language = '</span><span class="si">%s</span><span class="s">' AND test_size = '</span><span class="si">%s</span><span class="s">'"</span> <span class="o">%</span> <span class="p">(</span><span class="n">test_language</span><span class="p">,</span> <span class="n">test_size</span><span class="p">))</span>
+
+  <span class="n">recs</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">lang_cursor</span><span class="p">:</span>
+    <span class="n">recs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> 
+
+  <span class="n">total_failure</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">,</span> <span class="n">recs</span><span class="p">)))</span>
+  <span class="n">total_records</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
+
+  <span class="k">if</span> <span class="n">total_failure</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">recs</span><span class="p">))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="mi">0</span> 
+
+  <span class="k">print</span> <span class="n">test_language</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="n">test_size</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">total_failure</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">total_failure</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_records</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">avg_exec_time</span><span class="p">)</span>
+  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  
+</pre></div>
+
+<ul>
+<li>Graph: Categorization By Language &amp; Size (data_categorization.xsls)</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Python Results:</strong></p>
+
+<p><a href="/Users/rkrasniq/Desktop/Categorization_of_Data/lang_vs_size.jpeg" target="_blank"><img src="/Users/rkrasniq/Desktop/Categorization_of_Data/lang_vs_size.jpeg" alt="Alt text" style="max-width:100%;"></a></p>
+
+<p><br></p>
+
+<hr><ul>
+<li>Categorization by <strong>Language &amp; Size</strong> (3.1. categorize_by_lang_and_stage.py)</li>
+</ul><hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Python Implementation:</strong></p>
+
+<div class="highlight highlight-python"><pre><span class="kn">import</span> <span class="nn">pymysql</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
+
+<span class="n">conn</span> <span class="o">=</span> <span class="n">pymysql</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">'127.0.0.1'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">'root'</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="s">'*****'</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s">'google'</span><span class="p">)</span>
+
+<span class="n">iterator</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+<span class="n">iterator</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset GROUP BY test_language, stage"</span><span class="p">)</span> 
+
+<span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+  <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+<span class="n">iterator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+  <span class="n">test_language</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+  <span class="n">stage</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+
+  <span class="n">lang_cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> 
+  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE test_language = '</span><span class="si">%s</span><span class="s">' AND stage = '</span><span class="si">%s</span><span class="s">'"</span> <span class="o">%</span> <span class="p">(</span><span class="n">test_language</span><span class="p">,</span> <span class="n">stage</span><span class="p">))</span>
+
+  <span class="n">recs</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">lang_cursor</span><span class="p">:</span>
+    <span class="n">recs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> 
+
+  <span class="n">total_failure</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">,</span> <span class="n">recs</span><span class="p">)))</span>
+  <span class="n">total_records</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
+
+  <span class="k">if</span> <span class="n">total_failure</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">,</span> <span class="n">recs</span><span class="p">)))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="mi">0</span>
+
+  <span class="k">print</span> <span class="n">test_language</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="n">stage</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">total_failure</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">total_failure</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_records</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">avg_exec_time</span><span class="p">)</span>
+  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  
+</pre></div>
+
+<ul>
+<li>Graph: Categorization By <strong>Language &amp; Stage</strong> (data_categorization.xsls)</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Python Results:</strong></p>
+
+<p><a href="/Users/rkrasniq/Desktop/Categorization_of_Data/lang_vs_stage.jpeg" target="_blank"><img src="/Users/rkrasniq/Desktop/Categorization_of_Data/lang_vs_stage.jpeg" alt="Alt text" style="max-width:100%;"></a></p>
+
+<p><br></p>
+
+<hr><ul>
+<li>Categorization by <strong>Language</strong> (2.1. categorize_by_lang.py)</li>
+</ul><hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Pyhton Implementation:</strong></p>
+
+<div class="highlight highlight-python"><pre><span class="kn">import</span> <span class="nn">pymysql</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
+
+<span class="n">conn</span> <span class="o">=</span> <span class="n">pymysql</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">'127.0.0.1'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">'root'</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="s">'*****'</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s">'google'</span><span class="p">)</span>
+
+<span class="n">iterator</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+<span class="n">iterator</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset GROUP BY test_language"</span><span class="p">)</span> 
+
+<span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+  <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+<span class="n">iterator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+  <span class="n">test_language</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+
+
+  <span class="n">lang_cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> 
+  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE test_language = '</span><span class="si">%s</span><span class="s">'"</span> <span class="o">%</span> <span class="n">test_language</span><span class="p">)</span>
+
+  <span class="n">recs</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">lang_cursor</span><span class="p">:</span>
+    <span class="n">recs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> 
+
+  <span class="n">total_failure</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">,</span> <span class="n">recs</span><span class="p">)))</span>
+  <span class="n">total_records</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
+
+  <span class="k">if</span> <span class="n">total_failure</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">recs</span><span class="p">))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="mi">0</span>
+
+  <span class="k">print</span> <span class="n">test_language</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">total_failure</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">total_failure</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_records</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">avg_exec_time</span><span class="p">)</span>
+  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  
+</pre></div>
+
+<ul>
+<li>Graph: Categorization By <strong>Language</strong> (data_categorization.xsls)</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Python Results:</strong></p>
+
+<p><a href="/Users/rkrasniq/Desktop/Categorization_of_Data/language.jpeg" target="_blank"><img src="/Users/rkrasniq/Desktop/Categorization_of_Data/language.jpeg" alt="Alt text" style="max-width:100%;"></a></p>
+
+<p><br></p>
+
+<hr><ul>
+<li>Categorization by <strong>Size</strong> (2.2. categorize_by_lang.py)</li>
+</ul><hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Pyhton Implementation:</strong></p>
+
+<div class="highlight highlight-python"><pre><span class="kn">import</span> <span class="nn">pymysql</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
+
+<span class="n">conn</span> <span class="o">=</span> <span class="n">pymysql</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">'127.0.0.1'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">'root'</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="s">'*****'</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s">'google'</span><span class="p">)</span>
+
+<span class="n">iterator</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+<span class="n">iterator</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset GROUP BY test_size"</span><span class="p">)</span> 
+
+<span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+  <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+<span class="n">iterator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+  <span class="n">test_size</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
+
+
+  <span class="n">lang_cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> 
+  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE test_size = '</span><span class="si">%s</span><span class="s">'"</span> <span class="o">%</span> <span class="n">test_size</span><span class="p">)</span>
+
+  <span class="n">recs</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">lang_cursor</span><span class="p">:</span>
+    <span class="n">recs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> 
+
+  <span class="n">total_failure</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">,</span> <span class="n">recs</span><span class="p">)))</span>
+  <span class="n">total_records</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
+
+  <span class="k">if</span> <span class="n">total_failure</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">recs</span><span class="p">))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="mi">0</span> 
+
+  <span class="k">print</span> <span class="n">test_size</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">total_failure</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">total_failure</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_records</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">avg_exec_time</span><span class="p">)</span>
+  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  
+</pre></div>
+
+<ul>
+<li>Graph: Categorization By Language(data_categorization.xsls)</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Python Results:</strong></p>
+
+<p><a href="/Users/rkrasniq/Desktop/Categorization_of_Data/size.jpeg" target="_blank"><img src="/Users/rkrasniq/Desktop/Categorization_of_Data/size.jpeg" alt="Alt text" style="max-width:100%;"></a></p>
+
+<p><br></p>
+
+<p><img class="emoji" title=":copyright:" alt=":copyright:" src="https://assets-cdn.github.com/images/icons/emoji/copyright.png" height="20" width="20" align="absmiddle"> Rrezarta Krasniqi</p></body></html>
