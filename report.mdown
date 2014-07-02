@@ -1,7 +1,6 @@
 ![Alt text](http://rrezarta-krasniqi.github.io/esquared.jpg) 
 <hr>
 ##### :date: July 1, 2014 
-<hr>
 
 
 The Google Dataset of Testing Results
