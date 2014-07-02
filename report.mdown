@@ -112,7 +112,7 @@ SELECT Count(*) AS total_change_requests, stage
         WHERE 1 = 1
           AND stage = "POST"
      GROUP BY change_request) AS T
-UNION
+UNION ALL
 SELECT Count(*) AS total_change_requests,
        stage
   FROM (SELECT Count(change_request) AS change_request_count, IF(stage="PRES", "ICT phase",stage) AS stage
@@ -237,7 +237,7 @@ conn.close()
 
 :small_red_triangle_down: **Python Results:**
 
-![Alt text](lang_vs_size.jpeg)
+![Alt text](http://rrezarta-krasniqi.github.io/lang_vs_size.jpeg)
 
 
 <br>
@@ -297,7 +297,7 @@ conn.close()
 
 :small_red_triangle_down: **Python Results:**
 
-![Alt text](lang_vs_stage.jpeg)
+![Alt text](http://rrezarta-krasniqi.github.io/lang_vs_stage.jpeg)
 
 <br>
 
@@ -356,7 +356,7 @@ conn.close()
 
 :small_red_triangle_down: **Python Results:**
 
-![Alt text](language.jpeg)
+![Alt text](http://rrezarta-krasniqi.github.io/language.jpeg)
 
 <br>
 
@@ -415,8 +415,12 @@ conn.close()
 
 :small_red_triangle_down: **Python Results:**
 
-![Alt text](size.jpeg)
+![Alt text](http://rrezarta-krasniqi.github.io/size.jpeg)
 
 <br>
 
-:copyright: Rrezarta Krasniqi
+<hr>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:copyright: **Rrezarta Krasniqi - University of Nebraska - Lincoln**
