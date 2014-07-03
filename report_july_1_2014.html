@@ -749,7 +749,7 @@ body .task-list{
 .type-csharp .highlight .sc{
   color:#A31515
 }
-</style><title>report</title></head><body><p><a href="https://camo.githubusercontent.com/03dcf107c4f2bdd8f802b52a8178cd89f2090370/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f65737175617265642e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/03dcf107c4f2bdd8f802b52a8178cd89f2090370/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f65737175617265642e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/esquared.jpg" style="max-width:100%;"></a></p>
+</style><title>report_july_1_2014</title></head><body><p><a href="https://camo.githubusercontent.com/03dcf107c4f2bdd8f802b52a8178cd89f2090370/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f65737175617265642e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/03dcf107c4f2bdd8f802b52a8178cd89f2090370/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f65737175617265642e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/esquared.jpg" style="max-width:100%;"></a></p>
 
 <hr><h5>
 <a name="user-content-date-july-1-2014" class="anchor" href="#date-july-1-2014" aria-hidden="true"><span class="octicon octicon-link"></span></a><img class="emoji" title=":date:" alt=":date:" src="https://assets-cdn.github.com/images/icons/emoji/date.png" height="20" width="20" align="absmiddle"> July 1, 2014</h5>
@@ -852,7 +852,7 @@ sed -i <span class="s1">''</span> <span class="s1">'$ d'</span> testShareData.cs
 <ul>
 <li>There are total of <strong>4520</strong> different change request during ECT Phase</li>
 <li>There are total of <strong>1693</strong> different change request during ICT Phase</li>
-</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>MySQLImplementation:</strong></p>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>MySQL Implementation:</strong></p>
 
 <div class="highlight highlight-mysql"><pre><span class="k">SELECT</span> <span class="nf">Count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="k">AS</span> <span class="n">total_change_requests</span><span class="p">,</span> <span class="n">stage</span>
  <span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="nf">Count</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">change_request_count</span><span class="p">,</span> <span class="k">IF</span><span class="p">(</span><span class="n">stage</span><span class="o">=</span><span class="s2">"POST"</span><span class="p">,</span> <span class="s2">"ECT phase"</span><span class="p">,</span><span class="n">stage</span><span class="p">)</span> <span class="k">AS</span> <span class="n">stage</span>
@@ -890,6 +890,40 @@ sed -i <span class="s1">''</span> <span class="s1">'$ d'</span> testShareData.cs
 </table><p><br></p>
 
 <ul>
+<li>There are total of <strong>2037183</strong> different change request during ECT Phase (grouped by stage)</li>
+<li>There are total of <strong>1431765</strong> different change request during ICT Phase (grouped by stage)</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>MySQL Implementation:</strong></p>
+
+<div class="highlight highlight-mysql"><pre><span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span> <span class="k">AS</span> <span class="n">total_change_requests</span><span class="p">,</span> 
+<span class="p">(</span><span class="k">CASE</span> <span class="k">WHEN</span> <span class="n">stage</span> <span class="o">=</span> <span class="s1">'POST'</span> <span class="k">THEN</span> <span class="s1">'ECT phase'</span>
+      <span class="k">WHEN</span> <span class="n">stage</span> <span class="o">=</span> <span class="s1">'PRES'</span> <span class="k">THEN</span> <span class="s1">'ICT phase'</span>
+      <span class="k">ELSE</span> <span class="n">stage</span> 
+<span class="n">END</span><span class="p">)</span> <span class="k">AS</span> <span class="n">stage</span> 
+<span class="k">FROM</span> <span class="n">google_dataset</span>
+<span class="k">WHERE</span> <span class="n">stage</span> <span class="k">IN</span> <span class="p">(</span><span class="s1">'POST'</span><span class="p">,</span> <span class="s1">'PRES'</span><span class="p">)</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">stage</span>
+</pre></div>
+
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>Query Results:</strong></p>
+
+<table>
+<thead><tr>
+<th>total_change_requests</th>
+<th align="center">stage</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>2037183</td>
+<td align="center">ECT phase</td>
+</tr>
+<tr>
+<td>1431765</td>
+<td align="center">ICT phase</td>
+</tr>
+</tbody>
+</table><p><br></p>
+
+<ul>
 <li>Flaky Tests Results (Flaky_Tests_Results.sql)</li>
 </ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/small_red_triangle_down.png" height="20" width="20" align="absmiddle"><strong>MySQL Implementation (Not Working Because of Performance Issues):</strong></p>
 
@@ -908,7 +942,7 @@ sed -i <span class="s1">''</span> <span class="s1">'$ d'</span> testShareData.cs
     <span class="n">test_suite_mapped_id</span><span class="p">,</span>
     <span class="n">change_request</span><span class="p">,</span>
     <span class="n">shard_number</span><span class="p">,</span>
-    <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="nf">UPPER</span><span class="p">(</span><span class="n">test_status</span><span class="p">)</span> <span class="o">=</span> <span class="s2">"FAILED"</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span>
+    span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="nf">UPPER</span><span class="p">(</span><span class="n">test_status</span><span class="p">)</span> <span class="o">=</span> <span class="s2">"FAILED"</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span>
     <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="nf">UPPER</span><span class="p">(</span><span class="n">test_status</span><span class="p">)</span> <span class="o">=</span> <span class="s2">"PASSED"</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span><span class="p">,</span>
     <span class="p">(</span><span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="nf">UPPER</span><span class="p">(</span><span class="n">test_status</span><span class="p">)</span> <span class="o">=</span> <span class="s2">"FAILED"</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="o">/</span><span class="p">((</span><span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="n">test_status</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span> 
                                                        <span class="k">FROM</span> <span class="n">google_dataset</span> <span class="n">d2</span>

@@ -104,7 +104,7 @@ Dataset Analysis
 * There are total of **4520** different change request during ECT Phase
 * There are total of **1693** different change request during ICT Phase
 
-:small_red_triangle_down: **MySQLImplementation:**
+:small_red_triangle_down: **MySQL Implementation:**
 
 ~~~ mysql
 SELECT Count(*) AS total_change_requests, stage
@@ -129,6 +129,34 @@ SELECT Count(*) AS total_change_requests,
 |-----------------------|:----------:|
 | 4520                  |  ECT phase |
 | 1693                  |  ICT phase |
+
+
+<br>
+
+* There are total of **2037183** different change request during ECT Phase (grouped by stage)
+* There are total of **1431765** different change request during ICT Phase (grouped by stage)
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~mysql
+SELECT COUNT(stage) AS total_change_requests, 
+(CASE WHEN stage = 'POST' THEN 'ECT phase'
+      WHEN stage = 'PRES' THEN 'ICT phase'
+      ELSE stage 
+END) AS stage 
+FROM google_dataset
+WHERE stage IN ('POST', 'PRES')
+GROUP BY stage
+~~~
+
+
+:small_red_triangle_down: **Query Results:**
+
+| total_change_requests | stage      |
+|-----------------------|:----------:|
+| 2037183               |  ECT phase |
+| 1431765               |  ICT phase |
+
 
 
 <br>
