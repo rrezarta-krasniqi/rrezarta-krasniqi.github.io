@@ -6,6 +6,48 @@
 ##The Google Dataset of Testing Results
 
 
+<br>
+
+* Flaky Tests Results (flaky_tests_results.sql)
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~mysql
+
+SELECT test_suite_mapped_id,
+       change_request,
+       shard_number,
+       SUM(IF(UPPER(test_status) = "FAILED",1,0)) AS failed,
+       SUM(IF(UPPER(test_status) = "PASSED",1,0)) AS passed,
+       TRUNCATE (SUM(IF(UPPER(TEST_STATUS) = "FAILED",1,0))*100/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) 
+       										+ SUM(IF(UPPER(test_status) = "PASSED",1,)))),3) AS failure_rate,
+       avg(execution_time) as avg_exec,
+       max(execution_time) as max_exec_time,
+       max(launch_time) AS max_launch_time,
+       min(launch_time) AS min_launch_time  
+  FROM
+    google_dataset   
+  WHERE
+    UPPER(stage) = "POST"  
+  GROUP BY
+    test_suite, change_request, shard_number
+  HAVING failed > 0 AND passed > 0
+  ORDER BY
+    test_suite_mapped_id, change_request,shard_number ASC;
+~~~
+
+:pushpin: **Note** Below are the statistics of the results obtained for test_suites evaluated as flaky
+
+| **STATS**                                                                                 |          |        **TOTAL**           |
+|-------------------------------------------------------------------------------------------|----------|----------------------------|
+| flaky tests with same test_suite and same change_request and different shard numbers      | **1261** |        **2209**            |
+| flaky tests with same test_suite and different change_request and different shard numbers | **948**  |                            |
+| Max Failure Rate                                                                          | **80%**  | **1 test_suite affected**  |
+| Min Failure Rate                                                                          | **10%**  | **21 test_suite affected** |
+
+:bulb: The retrieved data are given in seperate excel sheets.
+
+
 
 
 

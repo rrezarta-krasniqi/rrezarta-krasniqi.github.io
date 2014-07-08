@@ -106,7 +106,7 @@ Dataset Analysis
 
 :small_red_triangle_down: **MySQL Implementation:**
 
-~~~ mysql
+~~~mysql
 SELECT Count(*) AS total_change_requests, stage
  FROM (SELECT Count(change_request) AS change_request_count, IF(stage="POST", "ECT phase",stage) AS stage
         FROM  google_dataset d
@@ -161,73 +161,23 @@ GROUP BY stage
 
 <br>
 
-* Flaky Tests Results (Flaky_Tests_Results.sql)
+<hr>
 
-:small_red_triangle_down: **MySQL Implementation (Not Working Because of Performance Issues):**
-
-~~~ mysql
-SELECT
-  DISTINCT test_suite_mapped_id,
-  change_request,
-  shard_number,
-  failed,
-  passed,
-  flaky_percent,
-  max_launch_time,
-  min_launch_time  
-FROM
-(   
-    SELECT
-    test_suite_mapped_id,
-    change_request,
-    shard_number,
-    SUM(IF(UPPER(test_status) = "FAILED",1,0)) AS failed,
-    SUM(IF(UPPER(test_status) = "PASSED",1,0)) AS passed,
-    (SUM(IF(UPPER(test_status) = "FAILED",1,0)*100/((SELECT COUNT(test_status) * 1.0 
-                                                       FROM google_dataset d2
-                                                      WHERE d2.test_suite_mapped_id = d1.test_suite_mapped_id      
-                                                        AND d2.change_request = d1.change_request) * 1.0))) AS flaky_percent,
-    MAX(launch_time) AS max_launch_time,
-    MIN(launch_time) AS min_launch_time       
-  FROM
-    google_dataset d1    
-  WHERE
-    UPPER(STAGE) = "POST"    
-  GROUP BY
-    test_suite,change_request,shard_number
-) AS T  
-  WHERE
-    failed > 0 AND passed > 0    
-  ORDER BY
-    test_suite_mapped_id, change_request,shard_number ASC;
-~~~
-
-:bulb: **Note** There are **154** test suites that are evaluated as flaky
-
- :pushpin: Therefore, there are **1691 flaky_tests** from total of **3468948**, that means that **0.0487%** of overall tests are evaluated as flaky from  **154** different test_suites
-
-### Categorization Of Data
-
-:bulb: Note: To retrieve the results, I have implemented a python script as shown below:
-
+* Categorization by **Language** (2.1.categorize_by_lang.py)
 
 <hr>
 
-* Categorization by **Language & Size** (3.2. categorize_by_lang_and_size.py)
+:small_red_triangle_down: **Pyhton Implementation:**
 
-<hr>
-
-:small_red_triangle_down: **Python Implementation:**
-
-~~~ python
+~~~python
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='*******', db='google')
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
 
 iterator = conn.cursor()
 
-iterator.execute("SELECT * FROM google_dataset GROUP BY test_language, test_size") 
+iterator.execute("SELECT * FROM google_dataset WHERE UPPER(stage) = 'POST' GROUP BY test_language") 
 
 records = []
 
@@ -238,10 +188,89 @@ iterator.close()
 
 for record in records:
   test_language = record[7]
-  test_size = record[8]
+
 
   lang_cursor = conn.cursor() 
-  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND test_size = '%s'" % (test_language, test_size))
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND WHERE UPPER(stage) = 'POST'" % test_language)
+
+  recs = []
+  for row in lang_cursor:
+    recs.append(row) 
+
+  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
+  total_records = float(len(recs))
+
+  if total_failure != 0:
+    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), recs)) / float(len(recs))
+  else:
+    avg_exec_time = 0
+
+  print test_language + "\t" + str(total_failure) + 
+              "\t" + str((100.0 * total_failure) / total_records) + 
+              "\t" + str(avg_exec_time)
+  lang_cursor.close()
+
+conn.close()  
+~~~
+
+
+* Graph: Categorization By **Language** (data_categorization.xsls)
+
+:small_red_triangle_down: **Python Results:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/lang.jpg)
+
+
+*Also the SQL version (with some modifications):**
+
+~~~mysql
+Select 
+        test_language as language,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "SMALL") AS lang_small_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "MEDIUM") AS lang_medium_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "LARGE") AS lang_larg_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) IN ("SMALL","MEDIUM","LARGE")) AS total_failure,
+        AVG(execution_time) as avg_execution,
+        TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0))*100/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 3) AS rate_failure
+FROM google_dataset
+         WHERE UPPER(stage) = "POST"
+Group By test_language
+~~~
+
+<br>
+
+
+<hr>
+
+* Categorization by **Size** (2.2. categorize_by_size.py)
+
+<hr>
+
+:small_red_triangle_down: **Pyhton Implementation:**
+
+~~~python
+import pymysql
+import pdb
+
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
+
+iterator = conn.cursor()
+
+iterator.execute("SELECT * FROM google_dataset WHERE UPPER(stage) = 'POST' GROUP BY test_size") 
+
+records = []
+
+for row in iterator:
+  records.append(row)
+
+iterator.close()
+
+for record in records:
+  test_size = record[8]
+
+
+  lang_cursor = conn.cursor() 
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_size = '%s' AND UPPER(stage) = 'POST'" % test_size)
 
   recs = []
   for row in lang_cursor:
@@ -255,25 +284,74 @@ for record in records:
   else:
     avg_exec_time = 0 
 
-  print test_language + "\t" + test_size + "\t" + str(total_failure) + "\t" + str((100.0 * total_failure) / total_records) + "\t" + str(avg_exec_time)
+  print test_size + "\t" + str(total_failure) + 
+            "\t" + str((100.0 * total_failure) / total_records) + 
+            "\t" + str(avg_exec_time)
   lang_cursor.close()
 
 conn.close()  
 ~~~
 
+**Also the SQL version (with some modifications):**
 
-* Graph: Categorization By Language & Size (data_categorization.xsls)
+~~~Mysql
+Select 
+        test_language as language,
+        test_status,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "SMALL") AS lang_small_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "MEDIUM") AS lang_medium_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "LARGE") AS lang_larg_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) IN ("SMALL","MEDIUM","LARGE")) AS total_failure,
+        AVG(execution_time) as avg_execution_time,
+        TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0))*100/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 3) AS rate_failure
+FROM google_dataset
+         WHERE UPPER(stage) = "POST"
+Group By test_size
+~~~
+
+* Graph: Categorization By **Size** (data_categorization.xsls)
 
 :small_red_triangle_down: **Python Results:**
 
-![Alt text](http://rrezarta-krasniqi.github.io/lang_vs_size.jpeg)
+![Alt text](http://rrezarta-krasniqi.github.io/size.jpg)
 
 
 <br>
 
 <hr>
 
-* Categorization by **Language & Size** (3.1. categorize_by_lang_and_stage.py)
+* Categorization by **Stage** (1.category_by_lang_size_column.sql)
+
+<hr>
+
+:small_red_triangle_down: **Python Implementation:**
+
+~~~mysql
+Select 
+        test_language as language,
+        test_status,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "SMALL") AS lang_small_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "MEDIUM") AS lang_medium_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "LARGE") AS lang_larg_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) IN ("SMALL","MEDIUM","LARGE")) AS total_failure,
+        AVG(execution_time) as avg_execution_time,
+        TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0))*100/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 3) AS rate_failure
+FROM google_dataset
+         WHERE UPPER(stage) = "POST"
+Group By stage
+~~~
+
+* Graph: Categorization By **Stage** (data_categorization.xsls)
+
+:small_red_triangle_down: **Python Results:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/stage.jpg)
+
+<br>
+
+<hr>
+
+* Categorization by **Language and Size** (3.2.categorize_by_lang_and_size.py)
 
 <hr>
 
@@ -283,7 +361,86 @@ conn.close()
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='*****', db='google')
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
+
+iterator = conn.cursor()
+
+iterator.execute("SELECT * FROM google_dataset WHERE UPPER(stage) = 'POST' GROUP BY test_language, test_size") 
+
+records = []
+
+for row in iterator:
+  records.append(row)
+
+iterator.close()
+
+for record in records:
+  test_language = record[7]
+  test_size = record[8]
+
+  lang_cursor = conn.cursor() 
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND test_size = '%s' AND UPPER(stage) = 'POST'" % (test_language, test_size))
+
+  recs = []
+  for row in lang_cursor:
+    recs.append(row) 
+
+  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
+  total_records = float(len(recs))
+
+  if total_failure != 0:
+    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), recs)) / float(len(recs))
+  else:
+    avg_exec_time = 0 
+
+  print test_language + "\t" + test_size + "\t" + str(total_failure) + 
+              "\t" + str((100.0 * total_failure) / total_records) + 
+              "\t" + str(avg_exec_time)
+  lang_cursor.close()
+
+conn.close()  
+~~~
+
+**Also the SQL version (with some modifications):**
+
+~~~mysql
+Select 
+        test_language as language,
+        test_status,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "SMALL") AS lang_small_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "MEDIUM") AS lang_medium_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "LARGE") AS lang_larg_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) IN ("SMALL","MEDIUM","LARGE")) AS total_failure,
+        AVG(execution_time) as avg_execution_time,
+        TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0))*100/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 3) AS rate_failure
+FROM google_dataset
+         WHERE UPPER(stage) = "POST"
+Group By test_language, test_size
+~~~
+
+* Graph: Categorization By **Language and Size** (data_categorization.xsls)
+
+:small_red_triangle_down: **Python Results:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/lang_and_size_tbl.jpg)
+
+<br>
+![Alt text](http://rrezarta-krasniqi.github.io/lang_and_size_fig.jpg)
+
+
+<hr>
+
+* Categorization by **Language and Stage** (3.1.categorize_by_lang_and_stage.py)
+
+<hr>
+
+:small_red_triangle_down: **Python Implementation:**
+
+~~~python
+import pymysql
+import pdb
+
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
 
 iterator = conn.cursor()
 
@@ -315,138 +472,75 @@ for record in records:
   else:
     avg_exec_time = 0
 
-  print test_language + "\t" + stage + "\t" + str(total_failure) + "\t" + str((100.0 * total_failure) / total_records) + "\t" + str(avg_exec_time)
+  print test_language + "\t" + stage + "\t" + str(total_failure) + 
+              "\t" + str((100.0 * total_failure) / total_records) +
+              "\t" + str(avg_exec_time)
   lang_cursor.close()
 
 conn.close()  
 ~~~
 
-
-* Graph: Categorization By **Language & Stage** (data_categorization.xsls)
-
-:small_red_triangle_down: **Python Results:**
-
-![Alt text](http://rrezarta-krasniqi.github.io/lang_vs_stage.jpeg)
-
 <br>
 
-<hr>
+*Also the SQL version (with some modifications):**
 
-* Categorization by **Language** (2.1. categorize_by_lang.py)
-
-<hr>
-
-:small_red_triangle_down: **Pyhton Implementation:**
-
-~~~python
-import pymysql
-import pdb
-
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='*****', db='google')
-
-iterator = conn.cursor()
-
-iterator.execute("SELECT * FROM google_dataset GROUP BY test_language") 
-
-records = []
-
-for row in iterator:
-  records.append(row)
-
-iterator.close()
-
-for record in records:
-  test_language = record[7]
-
-
-  lang_cursor = conn.cursor() 
-  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s'" % test_language)
-
-  recs = []
-  for row in lang_cursor:
-    recs.append(row) 
-
-  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
-  total_records = float(len(recs))
-
-  if total_failure != 0:
-    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), recs)) / float(len(recs))
-  else:
-    avg_exec_time = 0
-
-  print test_language + "\t" + str(total_failure) + "\t" + str((100.0 * total_failure) / total_records) + "\t" + str(avg_exec_time)
-  lang_cursor.close()
-
-conn.close()  
+~~~mysql
+Select 
+        test_language as language,
+        stage,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "SMALL") AS lang_small_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "MEDIUM") AS lang_medium_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "LARGE") AS lang_larg_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) IN ("SMALL","MEDIUM","LARGE")) AS total_failure,
+        AVG(execution_time) as avg_execution_time,
+        TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0))*100/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 3) AS rate_failure
+FROM google_dataset
+         WHERE UPPER(stage) = "POST"
+Group By test_language, stage
 ~~~
 
 
-* Graph: Categorization By **Language** (data_categorization.xsls)
+
+* Graph: Categorization By **Language and Stage** (data_categorization.xsls)
 
 :small_red_triangle_down: **Python Results:**
 
-![Alt text](http://rrezarta-krasniqi.github.io/language.jpeg)
+![Alt text](http://rrezarta-krasniqi.github.io/lang_and_stage.jpg)
+
 
 <br>
 
 <hr>
 
-* Categorization by **Size** (2.2. categorize_by_lang.py)
+* Categorization by **Size and Stage** (1.category_by_lang_size_columns.sql)
 
 <hr>
 
-:small_red_triangle_down: **Pyhton Implementation:**
+:small_red_triangle_down: **MySql Implementation:**
 
-~~~python
-import pymysql
-import pdb
-
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='*****', db='google')
-
-iterator = conn.cursor()
-
-iterator.execute("SELECT * FROM google_dataset GROUP BY test_size") 
-
-records = []
-
-for row in iterator:
-  records.append(row)
-
-iterator.close()
-
-for record in records:
-  test_size = record[8]
-
-
-  lang_cursor = conn.cursor() 
-  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_size = '%s'" % test_size)
-
-  recs = []
-  for row in lang_cursor:
-    recs.append(row) 
-
-  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
-  total_records = float(len(recs))
-
-  if total_failure != 0:
-    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), recs)) / float(len(recs))
-  else:
-    avg_exec_time = 0 
-
-  print test_size + "\t" + str(total_failure) + "\t" + str((100.0 * total_failure) / total_records) + "\t" + str(avg_exec_time)
-  lang_cursor.close()
-
-conn.close()  
+~~~Mysql
+Select 
+        test_language as language,
+        stage,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "SMALL") AS lang_small_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "MEDIUM") AS lang_medium_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) = "LARGE") AS lang_larg_failed,
+        SUM(IF(UPPER(test_status) = "FAILED",1,0) AND UPPER(test_size) IN ("SMALL","MEDIUM","LARGE")) AS total_failure,
+        AVG(execution_time)as avg_execution_time,
+        TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0))*100/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 3) AS rate_failure
+FROM google_dataset
+         WHERE UPPER(stage) IN ("POST", "PRES") 
+Group By test_size, stage
 ~~~
 
+<br>
 
-* Graph: Categorization By Language(data_categorization.xsls)
+* Graph: Categorization By **Size and Stage** (data_categorization.xsls)
 
 :small_red_triangle_down: **Python Results:**
 
-![Alt text](http://rrezarta-krasniqi.github.io/size.jpeg)
+![Alt text](http://rrezarta-krasniqi.github.io/size_and_stage.jpg)
 
-<br>
 
 <hr>
 :copyright: Rrezarta Krasniqi - University of Nebraska - Lincoln
