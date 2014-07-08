@@ -8,7 +8,11 @@
 
 <br>
 
+<hr>
+
 * Flaky Tests Results (flaky_tests_results.sql)
+
+<hr>
 
 :small_red_triangle_down: **MySQL Implementation:**
 
@@ -45,10 +49,47 @@ SELECT test_suite_mapped_id,
 | Max Failure Rate                                                                          | **80%**  | **1 test_suite affected**  |
 | Min Failure Rate                                                                          | **10%**  | **21 test_suite affected** |
 
-:bulb: The retrieved data are given in seperate excel sheets.
+:bulb: The retrieved data are shown in a seperate excel sheet (flaky_tests_all.csv & flaky_tests_stats.csv).
+
+<br>
+<hr>
+
+* Combined Shards Results (combined_shards_results.sql)
+
+<hr>
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~mysql
+SELECT test_suite_mapped_id,change_request,total_exec, total_shard_num, total_failed, total_passed,avg_exec_time, rate_failure
+FROM
+(  
+      SELECT test_suite_mapped_id, 
+			 change_request, 
+			 SUM(execution_time) AS total_exec, 
+			 COUNT(shard_number) AS total_shard_num, 
+			 SUM(IF(test_status = 'FAILED', 1, 0)) AS total_failed, 
+			 SUM(IF(test_status = 'PASSED', 1, 0)) AS total_passed,
+             AVG(execution_time) as avg_exec_time,
+             TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0))*100/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 3) AS rate_failure
+			 FROM google_dataset d 
+			 WHERE 1=1 
+             AND UPPER(stage) = "POST"
+			 GROUP BY test_suite, change_request
+) AS T
+WHERE total_passed > 0 AND rate_failure > 0;
+~~~
 
 
+:pushpin: **Note** Below are the statistics of the results obtained for passing test_suits with aggregated shard numbers
+
+| **STATS**                                 |           |        **TOTAL**        |
+|-------------------------------------------|-----------|-------------------------|
+| Test Suites with aggregated shard numbers | **1269**  |        **2209**         |
+| Max Failure Rate                          | **91.6%** | **T276, T287, T290**    |
+| Min Failure Rate                          | **2.44%** |        **T306**         |
 
 
+:bulb: The retrieved data are shown in a seperate excel sheet (combined_shards_results.csv).
 
+<hr>
 :copyright: Rrezarta Krasniqi - University of Nebraska - Lincoln
