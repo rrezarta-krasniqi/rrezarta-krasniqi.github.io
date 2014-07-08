@@ -84,7 +84,7 @@ WHERE total_passed > 0 AND rate_failure > 0;
 
 | **STATS**                                 |           |        **TOTAL**        |
 |-------------------------------------------|-----------|-------------------------|
-| Test Suites with aggregated shard numbers | **1269**  |        **2209**         |
+| Test Suites with aggregated shard numbers | ---///--- |        **1269**         |
 | Max Failure Rate                          | **91.6%** | **T276, T287, T290**    |
 | Min Failure Rate                          | **2.44%** |        **T306**         |
 
