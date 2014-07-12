@@ -1061,7 +1061,7 @@ containing <strong>6878</strong> change requests</li>
 <p><br></p>
 
 <hr><ul>
-<li>Categorization by <strong>Language and Size</strong> (3.2.categorize_by_lang_and_size.py)
+<li>Categorization by <strong>Language and Size</strong> (categorize_by_lang_and_size.py)
 <hr>
 </li>
 </ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Python Implementation:</strong></p>
@@ -1127,7 +1127,7 @@ containing <strong>6878</strong> change requests</li>
 </pre></div>
 
 <ul>
-<li>Graph: Categorization By <strong>Language Size and Stage</strong> (data_categorization.xsls)</li>
+<li>Graph: Categorization By <strong>Language Size</strong> (data_categorization.xsls)</li>
 </ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Python Results:</strong></p>
 
 <p><a href="https://camo.githubusercontent.com/9f614a044f4ec25188123969fb6eba5e11aaed69/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f616e645f73697a655f74626c2e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/9f614a044f4ec25188123969fb6eba5e11aaed69/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f616e645f73697a655f74626c2e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/lang_and_size_tbl.jpg" style="max-width:100%;"></a></p>
@@ -1135,7 +1135,7 @@ containing <strong>6878</strong> change requests</li>
 <p><br><a href="https://camo.githubusercontent.com/c24a3986fa6426af00807120349a77fac4637583/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f616e645f73697a655f6669672e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/c24a3986fa6426af00807120349a77fac4637583/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f616e645f73697a655f6669672e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/lang_and_size_fig.jpg" style="max-width:100%;"></a></p>
 
 <hr><ul>
-<li>Categorization by <strong>Language and Stage</strong> (3.1.categorize_by_lang_size_and_stage.py)</li>
+<li>Categorization by <strong>Language Size and Stage</strong> (categorize_by_lang_size_and_stage.py)</li>
 </ul><hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Python Implementation:</strong></p>
 
 <div class="highlight highlight-python"><pre><span class="kn">import</span> <span class="nn">pymysql</span>
@@ -1145,7 +1145,7 @@ containing <strong>6878</strong> change requests</li>
 
 <span class="n">iterator</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 
-<span class="n">iterator</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset GROUP BY test_language, size, stage"</span><span class="p">)</span> 
+<span class="n">iterator</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset GROUP BY test_language, test_size, stage"</span><span class="p">)</span> 
 
 <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -1160,7 +1160,7 @@ containing <strong>6878</strong> change requests</li>
   <span class="n">stage</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
 
   <span class="n">lang_cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> 
-  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE test_language = '</span><span class="si">%s</span><span class="s">' AND size = '</span><span class="si">%s</span><span class="s">'"</span> <span class="n">AND</span> <span class="n">stage</span> <span class="o">=</span> <span class="s">'</span><span class="si">%s</span><span class="s">'" % (test_language, size, stage))</span>
+  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE test_language = '</span><span class="si">%s</span><span class="s">' AND test_size = '</span><span class="si">%s</span><span class="s">'"</span> <span class="n">AND</span> <span class="n">stage</span> <span class="o">=</span> <span class="s">'</span><span class="si">%s</span><span class="s">'" % (test_language, size, stage))</span>
 
   <span class="n">recs</span> <span class="o">=</span> <span class="p">[]</span>
   <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">lang_cursor</span><span class="p">:</span>
@@ -1208,9 +1208,11 @@ containing <strong>6878</strong> change requests</li>
 
 <ul>
 <li>Graph: Categorization By <strong>Language, Size and Stage</strong> (data_categorization.xsls)</li>
-</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Python Results:</strong></p>
+</ul><p><a href="https://camo.githubusercontent.com/d1ff5cc2207879ea4725d8d6f605104e1c8a8535/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167652e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/d1ff5cc2207879ea4725d8d6f605104e1c8a8535/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167652e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/lang_size_and_stage.jpg" style="max-width:100%;"></a></p>
 
-<p><a href="https://camo.githubusercontent.com/d1ff5cc2207879ea4725d8d6f605104e1c8a8535/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167652e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/d1ff5cc2207879ea4725d8d6f605104e1c8a8535/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167652e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/lang_size_and_stage.jpg" style="max-width:100%;"></a></p>
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Python Results:</strong></p>
+
+<p><a href="https://camo.githubusercontent.com/e8bba89a0c798083c99fee560102adb0f1bef096/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167655f726573756c74732e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/e8bba89a0c798083c99fee560102adb0f1bef096/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167655f726573756c74732e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/lang_size_and_stage_results.jpg" style="max-width:100%;"></a></p>
 
 <p><br></p>
 
