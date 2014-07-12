@@ -1,0 +1,642 @@
+![Alt text](http://rrezarta-krasniqi.github.io/esquared.jpg) 
+<hr>
+##### :date: July 15, 2014 
+
+
+The Google Dataset of Testing Results
+=====================
+Data Download and Preprocessing
+-------------------------------
+~~~bash
+git clone https://code.google.com/p/google-shared-dataset-of-test-suite-results/
+cd google-shared-dataset-of-test-suite-results/posted
+gunzip testShareData.csv.rev.gz
+sed -i '' 's/^,//g' testShareData.csv.rev # replace the "," with "" if it is in the beginning of the line
+sed -i '' '$ d' testShareData.csv.rev # removes the last line which is empty
+~~~
+
+MySQL Database Schema and Import CSV File
+-----------------------------------------
+
+:small_red_triangle_down: **Query Implementation:**
+
+~~~mysql
+CREATE TABLE `google_dataset` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `test_suite_mapped_id` varchar(255) DEFAULT NULL,
+  `test_suite` longtext,
+  `change_request` int(11) DEFAULT NULL,
+  `stage` varchar(255) DEFAULT NULL,
+  `test_status` varchar(255) DEFAULT NULL,
+  `launch_time` datetime DEFAULT NULL,
+  `execution_time` int(11) DEFAULT NULL,
+  `test_size` varchar(255) DEFAULT NULL,
+  `shard_number` int(11) DEFAULT NULL,
+  `run_number` int(11) DEFAULT NULL,
+  `test_language` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `change_request_idx` (`change_request`) USING BTREE,
+  KEY `shard_number_idx` (`shard_number`) USING BTREE,
+  KEY `stage_idx` (`stage`) USING BTREE,
+  KEY `test_status_idx` (`test_status`) USING BTREE,
+  KEY `test_language_idx` (`test_language`) USING BTREE,
+  KEY `test_size_idx` (`test_size`) USING BTREE,
+  KEY `test_suite_mapped_id_idx` (`test_suite_mapped_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=3468949 DEFAULT CHARSET=utf8;
+
+LOAD DATA INFILE '/path/to/testShareData.csv.rev' INTO TABLE google_dataset \
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' \
+(id, change_request, execution_time, launch_time, run_number, shard_number, stage, test_language, test_size, test_status, test_suite, test_suite_mapped_id);
+
+-- Query OK, 3468948 rows affected (1 min 34.64 sec)
+-- Records: 3468948  Deleted: 0  Skipped: 0  Warnings: 0
+
+CREATE INDEX test_suite_mapped_id_idx ON google_dataset (test_suite_mapped_id) USING BTREE;
+CREATE INDEX change_request_idx ON google_dataset (change_request) USING BTREE;
+CREATE INDEX shard_number_idx ON google_dataset (shard_number) USING BTREE;
+CREATE INDEX stage_idx ON google_dataset (stage) USING BTREE;
+CREATE INDEX test_size_idx ON google_dataset (test_size) USING BTREE;
+CREATE INDEX test_status_idx ON google_dataset (test_status) USING BTREE;
+CREATE INDEX test_language_idx ON google_dataset (test_language) USING BTREE;
+~~~
+
+
+Dataset Analysis
+-------------
+
+* Total Distinct Test_Suites are: **5555**
+
+:small_red_triangle_down: **Query Implementation:**
+
+~~~ mysql
+        SELECT COUNT(DISTINCT test_suite_mapped_id) AS distinct_test_suits 
+        FROM google_dataset;
+~~~
+
+<br/>
+
+* There are also **3468948** records in the entire dataset
+
+:small_red_triangle_down: **Query Implementation:**
+~~~ mysql
+
+        SELECT COUNT(*) total_records FROM google_dataset;
+~~~
+
+<br/>
+
+* There are total of **169** different TEST_SUITES with partitioned executions
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~ mysql
+
+        SELECT COUNT(DISTINCT test_suite) AS test_suites
+        FROM   google_dataset
+        WHERE  shard_number IN (SELECT shard_number
+                                FROM   google_dataset
+                                WHERE  shard_number > 1);
+~~~
+
+<br/>
+
+
+* There are total of **4520** different change request during ECT Phase
+* There are total of **1693** different change request during ICT Phase
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~mysql
+SELECT Count(*) AS total_change_requests, stage
+ FROM (SELECT Count(change_request) AS change_request_count, IF(stage="POST", "ECT phase",stage) AS phase
+        FROM  google_dataset d
+        WHERE 1 = 1
+          AND stage = "POST"
+     GROUP BY change_request) AS T
+UNION ALL
+SELECT Count(*) AS total_change_requests,
+       stage
+  FROM (SELECT Count(change_request) AS change_request_count, IF(stage="PRES", "ICT phase",stage) AS phase
+          FROM google_datasetT d
+         WHERE 1 = 1
+           AND stage = "PRES"
+      GROUP BY change_request) AS T
+~~~
+
+:small_red_triangle_down: **Query Results:**
+
+| total_change_requests | phase      |
+|-----------------------|:----------:|
+| 4520                  |  ECT phase |
+| 1693                  |  ICT phase |
+
+
+<br>
+
+* Total Test Suite Executions Categorized By Stage:
+  * There are total of **2037183** test executions in the  ECT Phase 
+  * There are total of **1431765** test executions in the ICT Phase 
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~mysql
+SELECT COUNT(test_suite_name) AS test_suite_executions, 
+(CASE WHEN stage = 'POST' THEN 'ECT phase'
+      WHEN stage = 'PRES' THEN 'ICT phase'
+      ELSE stage 
+END) AS phase
+FROM google_dataset
+WHERE stage IN ('POST', 'PRES')
+GROUP BY stage
+~~~
+
+
+:small_red_triangle_down: **Query Results:**
+
+| test_suite_executions | phase      |
+|-----------------------|:----------:|
+| 2037183               |  ECT phase |
+| 1431765               |  ICT phase |
+
+
+<br>
+
+
+* There are **154** distinct test executions that fail during the **POST** phase,
+  containing **6878** change requests
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~mysql
+SELECT DISTINCT COUNT(DISTINCT test_suite_mapped_id) total_test_suites,
+  count(change_request) AS tot_change_requests,
+  test_status,
+  stage AS phase 
+FROM google_dataset 
+WHERE test_status = "FAILED" 
+AND stage = "POST"; 
+~~~
+
+:small_red_triangle_down: **Query Results:**
+
+| total_test_suites | total_change_requests | test_status | phase |
+|:-----------------:|:---------------------:|:-----------:|:-----:|
+|        154        |          6878         |    FAILED   |  POST |
+
+
+<br>
+
+* From **6878** change requests, only  **1045** are unique ones
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~mysql
+SELECT COUNT(DISTINCT change_request) AS distinct_change_requests,
+test_status,
+stage AS phase
+FROM google_dataset 
+WHERE test_status = "FAILED" 
+AND stage = "POST";
+~~~
+
+:small_red_triangle_down: **Query Results:**
+
+| distinct_change_requests | test_status | phase |
+|:------------------------:|:-----------:|:-----:|
+|           1045           |    FAILED   |  POST |
+
+
+<br>
+
+<hr>
+* Categorization by **Language** (2.1.categorize_by_lang.py)
+<hr>
+
+:small_red_triangle_down: **Pyhton Implementation:**
+
+~~~python
+import pymysql
+import pdb
+
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
+
+iterator = conn.cursor()
+
+iterator.execute("SELECT * FROM google_dataset WHERE UPPER(stage) = 'POST' GROUP BY test_language") 
+
+records = []
+
+for row in iterator:
+  records.append(row)
+
+iterator.close()
+
+for record in records:
+  test_language = record[7]
+
+
+  lang_cursor = conn.cursor() 
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND WHERE UPPER(stage) = 'POST'" % test_language)
+
+  recs = []
+  for row in lang_cursor:
+    recs.append(row) 
+
+  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
+  total_records = float(len(recs))
+
+  if total_failure != 0:
+    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), recs)) / float(len(recs))
+  else:
+    avg_exec_time = 0
+
+  print test_language + "\t" + str(total_failure) + 
+              "\t" + str((100.0 * total_failure) / total_records) + 
+              "\t" + str(avg_exec_time)
+  lang_cursor.close()
+
+conn.close()  
+~~~
+
+
+* Graph: Categorization By **Language** (data_categorization.xsls)
+
+:small_red_triangle_down: **Python Results:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/lang.jpg)
+
+
+*Also the SQL version (with some modifications):**
+
+~~~mysql
+SELECT
+        test_language as language,
+        SUM(IF(test_status = "FAILED",1,0) AND UPPER(test_size) = "SMALL") AS small,
+        SUM(IF(test_status = "FAILED",1,0) AND UPPER(test_size) = "MEDIUM") AS medium,
+        SUM(IF(test_status = "FAILED",1,0) AND UPPER(test_size) = "LARGE") AS large,
+        SUM(IF(test_status = "FAILED",1,0) AND UPPER(test_size) IN ("SMALL","MEDIUM","LARGE")) AS total_failure,
+        AVG((((execution_time % (1000*60*60)) % (1000*60)) / 1000)) AS avg_execution_time_sec,
+        TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0))*100/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
+FROM google_dataset
+         WHERE UPPER(stage) = "POST"
+GROUP BY test_language
+HAVING rate_failure > 0
+ORDER BY rate_failure DESC;
+~~~
+
+<br>
+
+
+<hr>
+* Categorization by **Language and Size** (categorize_by_lang_and_size.py)
+<hr>
+
+:small_red_triangle_down: **Python Implementation:**
+
+~~~python
+import pymysql
+import pdb
+
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
+
+iterator = conn.cursor()
+
+iterator.execute("SELECT * FROM google_dataset WHERE UPPER(stage) = 'POST' GROUP BY test_language, test_size") 
+
+records = []
+
+for row in iterator:
+  records.append(row)
+
+iterator.close()
+
+for record in records:
+  test_language = record[7]
+  test_size = record[8]
+
+  lang_cursor = conn.cursor() 
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND test_size = '%s' AND UPPER(stage) = 'POST'" % (test_language, test_size))
+
+  recs = []
+  for row in lang_cursor:
+    recs.append(row) 
+
+  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
+  total_records = float(len(recs))
+
+  if total_failure != 0:
+    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), recs)) / float(len(recs))
+  else:
+    avg_exec_time = 0 
+
+  print test_language + "\t" + test_size + "\t" + str(total_failure) + 
+              "\t" + str((100.0 * total_failure) / total_records) + 
+              "\t" + str(avg_exec_time)
+  lang_cursor.close()
+
+conn.close()  
+~~~
+
+**Also the SQL version (with some modifications):**
+
+~~~mysql
+SELECT 
+        test_language,
+        SUM(IF(test_status = "FAILED",1,0) AND UPPER(test_size) = "SMALL") AS small,
+        SUM(IF(test_status = "FAILED",1,0) AND UPPER(test_size) = "MEDIUM") AS medium,
+        SUM(IF(test_status = "FAILED",1,0) AND UPPER(test_size) = "LARGE") AS large,
+        SUM(IF(test_status = "FAILED",1,0) AND UPPER(test_size) IN ("SMALL","MEDIUM","LARGE")) AS total_failure,
+        AVG((((execution_time % (1000*60*60)) % (1000*60)) / 1000)) AS avg_execution_time_sec,
+        TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0))*100/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
+FROM google_dataset
+         WHERE stage = "POST"
+Group By test_language, test_size
+HAVING rate_failure > 0
+ORDER BY rate_failure DESC;
+~~~
+
+* Graph: Categorization By **Language Size and Stage** (data_categorization.xsls)
+
+:small_red_triangle_down: **Python Results:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/lang_and_size_tbl.jpg)
+
+<br>
+![Alt text](http://rrezarta-krasniqi.github.io/lang_and_size_fig.jpg)
+
+
+<hr>
+
+* Categorization by **Language Size and Stage** (categorize_by_lang_size_and_stage.py)
+
+<hr>
+
+:small_red_triangle_down: **Python Implementation:**
+
+~~~python
+import pymysql
+import pdb
+
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
+
+iterator = conn.cursor()
+
+iterator.execute("SELECT * FROM google_dataset GROUP BY test_language, size, stage") 
+
+records = []
+
+for row in iterator:
+  records.append(row)
+
+iterator.close()
+
+for record in records:
+  test_language = record[7]
+  size = record[8]
+  stage = record[6]
+
+  lang_cursor = conn.cursor() 
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND size = '%s'" AND stage = '%s'" % (test_language, size, stage))
+
+  recs = []
+  for row in lang_cursor:
+    recs.append(row) 
+
+  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
+  total_records = float(len(recs))
+
+  if total_failure != 0:
+    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), filter(lambda x: x[9] == "FAILED", recs))) / float(len(recs))
+  else:
+    avg_exec_time = 0
+
+  print test_language + 
+              "\t" + size +
+              "\t" + stage +
+              "\t" + str(total_failure) + 
+              "\t" + str((100.0 * total_failure) / total_records) +
+              "\t" + str(avg_exec_time)
+  lang_cursor.close()
+
+conn.close()  
+~~~
+
+<br>
+
+*Also the SQL version (with some modifications):**
+
+~~~mysql
+SELECT 
+        test_language,
+        test_size
+        stage,
+        SUM(IF(test_status = "FAILED",1,0) AND UPPER(test_size) = "SMALL") AS small,
+        SUM(IF(test_status = "FAILED",1,0) AND UPPER(test_size) = "MEDIUM") AS medium,
+        SUM(IF(test_status = "FAILED",1,0) AND UPPER(test_size) = "LARGE") AS large,
+        SUM(IF(test_status = "FAILED",1,0) AND UPPER(test_size) IN ("SMALL","MEDIUM","LARGE")) AS total_failure,
+        AVG((((execution_time % (1000*60*60)) % (1000*60)) / 1000)) AS avg_execution_time_sec,
+        TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0))*100/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
+FROM google_dataset
+         WHERE stage IN ("POST", "PRES")
+Group By test_language, test_size, stage
+HAVING rate_failure > 0
+ORDER BY rate_failure DESC
+~~~
+
+
+* Graph: Categorization By **Language, Size and Stage** (data_categorization.xsls)
+
+:small_red_triangle_down: **Python Results:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/lang_size_and_stage.jpg)
+
+<br>
+
+<hr>
+Unique Failing Test Suites (executions) (unique_faling_test_suites.sql)
+<hr>
+
+
+:bulb: **NOTE:**
+   * Change requests that belong to each test_suite can be more than
+     one and they in some cases are repetitive or distinct
+
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~MySql
+SELECT test_suite_mapped_id,
+       change_request,
+       stage,
+       test_language,
+       test_size,
+       "failed",
+       launch_time,
+       avg_execution_time_sec,
+       rate_failure
+FROM
+(
+      SELECT  DISTINCT test_suite_mapped_id,
+               change_request,
+               stage,
+               test_language,
+               test_size,
+               test_status,
+               DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
+               AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
+               TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
+         FROM google_dataset
+        WHERE UPPER(stage) = "POST"
+     GROUP BY test_suite_mapped_id, stage
+     UNION ALL
+     SELECT DISTINCT test_suite_mapped_id,
+               change_request,
+               stage,
+               test_language,
+               test_size,
+               test_status,
+               DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
+               AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
+               TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
+         FROM google_dataset
+        WHERE UPPER(stage) ="PRES"
+     GROUP BY test_suite_mapped_id, stage, test_size
+) AS T
+HAVING rate_failure <> 0
+ ORDER BY stage, rate_failure DESC
+~~~
+
+
+* Graph: Unique Test Suite Failures (unique_test_suite_failures.xsls)
+
+
+![Alt text](http://rrezarta-krasniqi.github.io/unique_test_suite_failures.jpg)
+
+
+:small_red_triangle_down: **MySQL Results:**
+
+
+Refer to excel sheet to chekc the results the results
+
+
+<hr>
+Unique Total Failing Test Suites (executions) (unique_tot_faling_test_suites.sql)
+<hr>
+
+:bulb: **NOTE:**
+   There are total of 358 unique test suites for both stages.
+   * 153 are unique test suites faling from POST stage
+   * 205 are unique test suites failing from PRES stage
+
+
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~MySQL
+
+
+SELECT  COUNT(CASE WHEN stage = "PRES" THEN 1
+             WHEN stage = "POST" THEN 1
+             ELSE stage END) AS tot_faling_test_suites, 
+             stage AS phase
+FROM
+(
+SELECT distinct test_suite_mapped_id,
+               change_request,
+               stage,
+               test_language,
+               test_size,
+               test_status,
+               DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
+               AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
+               TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
+         FROM google_dataset
+        WHERE UPPER(stage) ="POST"
+     GROUP BY test_suite_mapped_id, stage, test_size
+HAVING rate_failure > 0
+     UNION ALL
+     SELECT distinct test_suite_mapped_id,
+               change_request,
+               stage,
+               test_language,
+               test_size,
+               test_status,
+               DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
+               AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
+               TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
+         FROM google_dataset
+        WHERE UPPER(stage) ="PRES"
+     GROUP BY test_suite_mapped_id, stage, test_size
+HAVING rate_failure > 0
+) AS T
+GROUP BY stage
+ 
+~~~
+
+<br>
+
+:small_red_triangle_down: **MySQL Results:**
+
+| tot_failing_test_suites | phase |
+|:-----------------------:|:-----:|
+|           153           |  POST |
+|           205           |  PRES |
+
+
+<br>
+
+<hr>
+Unique Test Suite Failures During POST Phase (unique_faling_test_suites.sql)
+<hr>
+
+
+:bulb: **NOTE:**
+   * Change requests that belong to each test_suite can be more than
+     one and they in some cases are repetitive or distinct
+
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~MySql
+SELECT test_suite_mapped_id,
+       change_request,
+       stage,
+       test_language,
+       test_size,
+       "failed",
+       launch_time,
+       avg_execution_time_sec,
+       rate_failure
+FROM
+(
+      SELECT  DISTINCT test_suite_mapped_id,
+               change_request,
+               stage,
+               test_language,
+               test_size,
+               test_status,
+               DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
+               AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
+               TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
+         FROM google_dataset
+        WHERE UPPER(stage) = "POST"
+     GROUP BY test_suite_mapped_id, stage
+) AS T
+HAVING rate_failure <> 0
+ ORDER BY stage, rate_failure DESC
+~~~
+
+
+* Graph: Unique Test Suite Failures During POST Phase (unique_test_suite_failures_post.xsls)
+
+
+![Alt text](http://rrezarta-krasniqi.github.io/unique_test_suite_failures_post.jpg)
+
+
+:small_red_triangle_down: **MySQL Results:**
+
+
+Refer to excel sheet to check the results
+
+<hr>
+:copyright: Rrezarta Krasniqi - University of Nebraska - Lincoln
