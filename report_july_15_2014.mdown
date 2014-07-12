@@ -522,7 +522,10 @@ HAVING rate_failure <> 0
 ~~~
 
 
-* Graph: Unique Test Suite Failures (unique_test_suite_failures_post_pre.xsls)
+* Graph: Unique Test Suite Failures During ICT & ECT Phase (unique_test_suite_failures_post_pre.xsls)
+
+
+![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_post_pre.jpg)
 
 
 ![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_post_pre_2d.jpg)
@@ -584,10 +587,13 @@ HAVING rate_failure <> 0
 * Graph: Unique Test Suite Failures During POST Phase (unique_test_suite_failures_post.xsls)
 
 
+![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_post.jpg)
+
+
 ![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_post_2d.jpg)
 
 
-![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_Post_3d.jpg)
+![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_post_3d.jpg)
 
 
 :small_red_triangle_down: **MySQL Results:**
