@@ -4,8 +4,9 @@
 ## Progress Reports
 
 
-:date: July 1, 2014 > [Report](http://rrezarta-krasniqi.github.io/report_july_1_2014.html "july_1_2014")
 
-:date: July 8, 2014 > [Report](http://rrezarta-krasniqi.github.io/report_july_8_2014.html "july_8_2014")
+#####:date: July 1, 2014 > [Report](http://rrezarta-krasniqi.github.io/report_july_1_2014.html "july_1_2014")
 
-:date: July 15, 2014 > [Report](http://rrezarta-krasniqi.github.io/report_july_15_2014.html "july_8_2014")
+#####:date: July 8, 2014 > [Report](http://rrezarta-krasniqi.github.io/report_july_8_2014.html "july_8_2014")
+
+#####:date: July 15, 2014 > [Report](http://rrezarta-krasniqi.github.io/report_july_15_2014.html "july_8_2014")
