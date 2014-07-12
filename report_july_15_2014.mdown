@@ -451,12 +451,95 @@ ORDER BY rate_failure DESC
 
 :small_red_triangle_down: **Python Results:**
 
-![Alt text](http://rrezarta-krasniqi.github.io/lang_size_and_stage_results.jpg)
+![Alt text](http://rrezarta-krasniqi.github.io/lang_size_and_stage.jpg)
 
 <br>
 
 <hr>
-Unique Failing Test Suites (executions) (unique_faling_test_suites.sql)
+Unique Failing Test Suites (executions) (unique_faling_test_suites_post_pre.sql)
+<hr>
+
+
+:bulb: **NOTE:**
+   * Change requests that belong to each test_suite can be more than
+     one and they in some cases are repetitive or distinct
+
+:bulb: **Explanation:**
+
+*For example:*
+
+  * failure rate - 72/84 -- means for T5273, there are 72 different change requests that fail from 84, 
+    they are then grouped by stage and size
+  
+  * failure rate - 69/81 -- means for T5273, there are 69 different change requests that fail from 81,
+    they are then grouped by stage and size
+
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~MySql
+SELECT test_suite_mapped_id,
+       tot_change_requests, 
+       stage,
+       test_language,
+       test_size,
+       "failed",
+       launch_time,
+       avg_execution_time_sec,
+       rate_failure
+FROM
+(
+      SELECT DISTINCT test_suite_mapped_id,
+               COUNT(change_request) as tot_change_requests,
+               stage,
+               test_language,
+               test_size,
+               "failed",
+               test_status,
+               DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
+               AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
+               TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
+         FROM google_dataset
+        WHERE UPPER(stage) ="POST"
+    GROUP BY test_suite_mapped_id, stage, test_size
+     UNION ALL
+     SELECT DISTINCT test_suite_mapped_id,
+               count(change_request) as tot_change_requests,
+               stage,
+               test_language,
+               test_size,
+               "failed",
+               test_status,
+               DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
+               AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
+               TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
+         FROM google_dataset
+        WHERE UPPER(stage) ="PRES"
+  GROUP BY test_suite_mapped_id, stage, test_size
+) AS T
+HAVING rate_failure <> 0
+ ORDER BY stage, rate_failure DESC
+~~~
+
+
+* Graph: Unique Test Suite Failures (unique_test_suite_failures_post_pre.xsls)
+
+
+![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_post_pre_2d.jpg)
+
+
+![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_post_pre_3d.jpg)
+
+
+:small_red_triangle_down: **MySQL Results:**
+
+
+Refer to excel sheet to chekc the results the results
+
+<br>
+
+<hr>
+Unique Test Suite Failures During ECT Phase Only (unique_faling_test_suites_post.sql)
 <hr>
 
 
@@ -469,7 +552,7 @@ Unique Failing Test Suites (executions) (unique_faling_test_suites.sql)
 
 ~~~MySql
 SELECT test_suite_mapped_id,
-       change_request,
+       tot_change_requests, 
        stage,
        test_language,
        test_size,
@@ -479,101 +562,91 @@ SELECT test_suite_mapped_id,
        rate_failure
 FROM
 (
-      SELECT  DISTINCT test_suite_mapped_id,
-               change_request,
+      SELECT DISTINCT test_suite_mapped_id,
+               COUNT(change_request) as tot_change_requests,
                stage,
                test_language,
                test_size,
-               test_status,
-               DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
-               AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
-               TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
-         FROM google_dataset
-        WHERE UPPER(stage) = "POST"
-     GROUP BY test_suite_mapped_id, stage
-     UNION ALL
-     SELECT DISTINCT test_suite_mapped_id,
-               change_request,
-               stage,
-               test_language,
-               test_size,
-               test_status,
-               DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
-               AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
-               TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
-         FROM google_dataset
-        WHERE UPPER(stage) ="PRES"
-     GROUP BY test_suite_mapped_id, stage, test_size
-) AS T
-HAVING rate_failure <> 0
- ORDER BY stage, rate_failure DESC
-~~~
-
-
-* Graph: Unique Test Suite Failures (unique_test_suite_failures.xsls)
-
-
-![Alt text](http://rrezarta-krasniqi.github.io/unique_test_suite_failures.jpg)
-
-
-:small_red_triangle_down: **MySQL Results:**
-
-
-Refer to excel sheet to chekc the results the results
-
-
-<hr>
-Unique Total Failing Test Suites (executions) (unique_tot_faling_test_suites.sql)
-<hr>
-
-:bulb: **NOTE:**
-   There are total of 358 unique test suites for both stages.
-   * 153 are unique test suites faling from POST stage
-   * 205 are unique test suites failing from PRES stage
-
-
-
-:small_red_triangle_down: **MySQL Implementation:**
-
-~~~MySQL
-
-
-SELECT  COUNT(CASE WHEN stage = "PRES" THEN 1
-             WHEN stage = "POST" THEN 1
-             ELSE stage END) AS tot_faling_test_suites, 
-             stage AS phase
-FROM
-(
-SELECT distinct test_suite_mapped_id,
-               change_request,
-               stage,
-               test_language,
-               test_size,
+               "failed",
                test_status,
                DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
                AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
                TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
          FROM google_dataset
         WHERE UPPER(stage) ="POST"
-     GROUP BY test_suite_mapped_id, stage, test_size
-HAVING rate_failure > 0
-     UNION ALL
-     SELECT distinct test_suite_mapped_id,
-               change_request,
+    GROUP BY test_suite_mapped_id, stage, test_size
+) AS T
+HAVING rate_failure <> 0
+ ORDER BY stage, rate_failure DESC
+~~~
+
+
+* Graph: Unique Test Suite Failures During POST Phase (unique_test_suite_failures_post.xsls)
+
+
+![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_post_2d.jpg)
+
+
+![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_Post_3d.jpg)
+
+
+:small_red_triangle_down: **MySQL Results:**
+
+
+Refer to excel sheet to check the results
+
+<br>
+
+<hr>
+Total Unique Failing Test Suites (executions) (unique_tot_faling_test_suites.sql)
+<hr>
+
+:bulb: **NOTE:**
+ * There are total of 358 unique test suites for both stages.
+ * **153** are unique test suites failing from POST stage that contain total of **285,105** change requests
+ * **205** are unique test suites failing from PRES stage that contain total of **115,745** change requests
+
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~MySQL
+SELECT  COUNT(CASE WHEN stage = "PRES" THEN 1
+             WHEN stage = "POST" THEN 1
+             ELSE stage END) AS tot_faling_test_suites, 
+             stage AS phase
+FROM
+(
+     SELECT DISTINCT test_suite_mapped_id,
+               COUNT(change_request) as tot_change_requests,
                stage,
                test_language,
                test_size,
+               "failed",
+               test_status,
+               DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
+               AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
+               TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
+         FROM google_dataset
+        WHERE UPPER(stage) ="POST"
+    GROUP BY test_suite_mapped_id, stage, test_size
+HAVING rate_failure > 0
+UNION ALL
+      SELECT DISTINCT test_suite_mapped_id,
+               count(change_request) as tot_change_requests,
+               stage,
+               test_language,
+               test_size,
+               "failed",
                test_status,
                DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
                AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
                TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
          FROM google_dataset
         WHERE UPPER(stage) ="PRES"
-     GROUP BY test_suite_mapped_id, stage, test_size
+  GROUP BY test_suite_mapped_id, stage, test_size
 HAVING rate_failure > 0
 ) AS T
 GROUP BY stage
- 
 ~~~
 
 <br>
@@ -586,60 +659,13 @@ GROUP BY stage
 |           205           |  PRES |
 
 
-<br>
-
-<hr>
-Unique Test Suite Failures During POST Phase (unique_faling_test_suites.sql)
-<hr>
+### Some More Statistics About The Data Overall
 
 
-:bulb: **NOTE:**
-   * Change requests that belong to each test_suite can be more than
-     one and they in some cases are repetitive or distinct
+| total unique test suites | total_faling unique test suites | rate failure % |
+|:------------------------:|:-------------------------------:|:--------------:|
+|           5555           |               358               |      6.44      |
 
-
-:small_red_triangle_down: **MySQL Implementation:**
-
-~~~MySql
-SELECT test_suite_mapped_id,
-       change_request,
-       stage,
-       test_language,
-       test_size,
-       "failed",
-       launch_time,
-       avg_execution_time_sec,
-       rate_failure
-FROM
-(
-      SELECT  DISTINCT test_suite_mapped_id,
-               change_request,
-               stage,
-               test_language,
-               test_size,
-               test_status,
-               DATE_FORMAT(launch_time, '%a, %D, %M') AS launch_time,
-               AVG((((execution_time % (1000*60*60)) % (1000*60))/1000)) AS avg_execution_time_sec,
-               TRUNCATE(SUM(IF(UPPER(test_status) = "FAILED",1,0)*100)/((SUM(IF(UPPER(test_status) = "FAILED",1,0)) + SUM(IF(UPPER(test_status) = "PASSED",1,0)))), 2) AS rate_failure
-         FROM google_dataset
-        WHERE UPPER(stage) = "POST"
-     GROUP BY test_suite_mapped_id, stage
-) AS T
-HAVING rate_failure <> 0
- ORDER BY stage, rate_failure DESC
-~~~
-
-
-* Graph: Unique Test Suite Failures During POST Phase (unique_test_suite_failures_post.xsls)
-
-
-![Alt text](http://rrezarta-krasniqi.github.io/unique_test_suite_failures_post.jpg)
-
-
-:small_red_triangle_down: **MySQL Results:**
-
-
-Refer to excel sheet to check the results
 
 <hr>
 :copyright: Rrezarta Krasniqi - University of Nebraska - Lincoln
