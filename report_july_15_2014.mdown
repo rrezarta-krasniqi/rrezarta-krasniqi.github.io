@@ -355,7 +355,7 @@ HAVING rate_failure > 0
 ORDER BY rate_failure DESC;
 ~~~
 
-* Graph: Categorization By **Language Size and Stage** (data_categorization.xsls)
+* Graph: Categorization By **Language Size** (data_categorization.xsls)
 
 :small_red_triangle_down: **Python Results:**
 
@@ -381,7 +381,7 @@ conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******'
 
 iterator = conn.cursor()
 
-iterator.execute("SELECT * FROM google_dataset GROUP BY test_language, size, stage") 
+iterator.execute("SELECT * FROM google_dataset GROUP BY test_language, test_size, stage") 
 
 records = []
 
@@ -396,7 +396,7 @@ for record in records:
   stage = record[6]
 
   lang_cursor = conn.cursor() 
-  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND size = '%s'" AND stage = '%s'" % (test_language, size, stage))
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND test_size = '%s'" AND stage = '%s'" % (test_language, size, stage))
 
   recs = []
   for row in lang_cursor:
@@ -446,9 +446,12 @@ ORDER BY rate_failure DESC
 
 * Graph: Categorization By **Language, Size and Stage** (data_categorization.xsls)
 
+![Alt text](http://rrezarta-krasniqi.github.io/lang_size_and_stage.jpg)
+
+
 :small_red_triangle_down: **Python Results:**
 
-![Alt text](http://rrezarta-krasniqi.github.io/lang_size_and_stage.jpg)
+![Alt text](http://rrezarta-krasniqi.github.io/lang_size_and_stage_results.jpg)
 
 <br>
 
