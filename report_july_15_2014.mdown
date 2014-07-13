@@ -209,7 +209,7 @@ AND stage = "POST";
 <br>
 
 <hr>
-* Categorization by **Language** (2.1.categorize_by_lang.py)
+* Categorization by **Language** (categorize_by_lang.py)
 <hr>
 
 :small_red_triangle_down: **Pyhton Implementation:**
@@ -218,11 +218,9 @@ AND stage = "POST";
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
-
+conn = pymysql.connect(host='cse.unl.edu', port=3306, user='rkrasniq', passwd='******', db='rkrasniq')
 iterator = conn.cursor()
-
-iterator.execute("SELECT * FROM google_dataset WHERE UPPER(stage) = 'POST' GROUP BY test_language") 
+iterator.execute("SELECT * FROM google_dataset WHERE stage = 'POST' GROUP BY test_language") 
 
 records = []
 
@@ -232,27 +230,29 @@ for row in iterator:
 iterator.close()
 
 for record in records:
-  test_language = record[7]
+  test_language = record[11]
 
 
   lang_cursor = conn.cursor() 
-  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND WHERE UPPER(stage) = 'POST'" % test_language)
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE stage = 'POST' AND test_language = '%s'" % test_language)
 
   recs = []
   for row in lang_cursor:
     recs.append(row) 
 
-  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
+  total_failure = float(len(filter(lambda x: x[5] == "FAILED", recs)))
   total_records = float(len(recs))
 
   if total_failure != 0:
-    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), recs)) / float(len(recs))
+    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[7]), recs)) / float(len(recs))
   else:
-    avg_exec_time = 0
+    avg_exec_time = 0 
 
-  print test_language + "\t" + str(total_failure) + 
-              "\t" + str((100.0 * total_failure) / total_records) + 
-              "\t" + str(avg_exec_time)
+      if total_failure > 0:
+      print test_language + "\t" \
+         + str(total_failure) + "\t" \
+         + str((avg_exec_time/1000)%60) + "\t" \
+         + str((100.0 * total_failure) / total_records) 
   lang_cursor.close()
 
 conn.close()  
@@ -297,41 +297,42 @@ ORDER BY rate_failure DESC;
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
-
+conn = pymysql.connect(host='cse.unl.edu', port=3306, user='rkrasniq', passwd='******', db='rkrasniq')
 iterator = conn.cursor()
-
-iterator.execute("SELECT * FROM google_dataset WHERE UPPER(stage) = 'POST' GROUP BY test_language, test_size") 
+iterator.execute("SELECT * FROM google_dataset WHERE stage = 'POST' GROUP BY test_language, test_size") 
 
 records = []
-
 for row in iterator:
+
   records.append(row)
 
 iterator.close()
 
 for record in records:
-  test_language = record[7]
+  test_language = record[11]
   test_size = record[8]
 
   lang_cursor = conn.cursor() 
-  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND test_size = '%s' AND UPPER(stage) = 'POST'" % (test_language, test_size))
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND test_size = '%s' AND stage = 'POST'" % (test_language, test_size))
 
   recs = []
   for row in lang_cursor:
     recs.append(row) 
 
-  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
+  total_failure = float(len(filter(lambda x: x[5] == "FAILED", recs)))
   total_records = float(len(recs))
 
   if total_failure != 0:
-    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), recs)) / float(len(recs))
+    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[7]), recs)) / float(len(recs))
   else:
     avg_exec_time = 0 
 
-  print test_language + "\t" + test_size + "\t" + str(total_failure) + 
-              "\t" + str((100.0 * total_failure) / total_records) + 
-              "\t" + str(avg_exec_time)
+  if total_failure > 0:
+    print test_language + "\t" \
+       + test_size + "\t" \
+         + str(total_failure) + "\t" \
+         + str((avg_exec_time/1000)%60) + "\t" \
+         + str((100.0 * total_failure) / total_records) 
   lang_cursor.close()
 
 conn.close()  
@@ -355,20 +356,15 @@ HAVING rate_failure > 0
 ORDER BY rate_failure DESC;
 ~~~
 
-* Graph: Categorization By **Language Size** (data_categorization.xsls)
 
 :small_red_triangle_down: **Python Results:**
 
-![Alt text](http://rrezarta-krasniqi.github.io/lang_and_size_tbl.jpg)
+![Alt text](http://rrezarta-krasniqi.github.io/lang_and_size.jpg)
 
 <br>
-![Alt text](http://rrezarta-krasniqi.github.io/lang_and_size_fig.jpg)
-
 
 <hr>
-
 * Categorization by **Language Size and Stage** (categorize_by_lang_size_and_stage.py)
-
 <hr>
 
 :small_red_triangle_down: **Python Implementation:**
@@ -377,10 +373,8 @@ ORDER BY rate_failure DESC;
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
-
+conn = pymysql.connect(host='cse.unl.edu', port=3306, user='rkrasniq', passwd='ob8{i5', db='rkrasniq')
 iterator = conn.cursor()
-
 iterator.execute("SELECT * FROM google_dataset GROUP BY test_language, test_size, stage") 
 
 records = []
@@ -391,31 +385,32 @@ for row in iterator:
 iterator.close()
 
 for record in records:
-  test_language = record[7]
-  size = record[8]
-  stage = record[6]
+  test_language = record[11]
+  test_size = record[8]
+  stage = record[4]
 
   lang_cursor = conn.cursor() 
-  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND test_size = '%s'" AND stage = '%s'" % (test_language, size, stage))
+  lang_cursor.execute("SELECT * FROM google_dataset WHERE test_language = '%s' AND test_size = '%s' AND stage = '%s'" % (test_language, test_size, stage))
 
   recs = []
   for row in lang_cursor:
     recs.append(row) 
 
-  total_failure = float(len(filter(lambda x: x[9] == "FAILED", recs)))
+  total_failure = float(len(filter(lambda x: x[5] == "FAILED", recs)))
   total_records = float(len(recs))
 
   if total_failure != 0:
-    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[2]), filter(lambda x: x[9] == "FAILED", recs))) / float(len(recs))
+    avg_exec_time = reduce(lambda x, y: x + y, map(lambda z: float(z[7]), recs)) / float(len(recs))
   else:
     avg_exec_time = 0
 
-  print test_language + 
-              "\t" + size +
-              "\t" + stage +
-              "\t" + str(total_failure) + 
-              "\t" + str((100.0 * total_failure) / total_records) +
-              "\t" + str(avg_exec_time)
+  if total_failure > 0:
+             print test_language + "\t" \
+                 + test_size + "\t" \
+                 + stage + "\t" \
+                 + str(total_failure) + "\t" \
+                 + str((avg_exec_time/1000)%60) + "\t" \
+                 + str((100.0 * total_failure) / total_records) 
   lang_cursor.close()
 
 conn.close()  
@@ -446,17 +441,17 @@ ORDER BY rate_failure DESC
 
 * Graph: Categorization By **Language, Size and Stage** (data_categorization.xsls)
 
-![Alt text](http://rrezarta-krasniqi.github.io/lang_size_and_stage.jpg)
+![Alt text](http://rrezarta-krasniqi.github.io/lang_size_and_stage_graph.jpg)
 
 
 :small_red_triangle_down: **Python Results:**
 
-![Alt text](http://rrezarta-krasniqi.github.io/lang_size_and_stage.jpg)
+![Alt text](http://rrezarta-krasniqi.github.io/lang_size_and_stage_results.jpg)
 
 <br>
 
 <hr>
-Unique Failing Test Suites (executions) (unique_faling_test_suites_post_pre.sql)
+Unique Failing Test Suites (Executions) During ECT Phase (unique_faling_test_suites_post_pre.sql)
 <hr>
 
 

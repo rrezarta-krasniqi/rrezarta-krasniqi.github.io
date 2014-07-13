@@ -987,7 +987,7 @@ containing <strong>6878</strong> change requests</li>
 </table><p><br></p>
 
 <hr><ul>
-<li>Categorization by <strong>Language</strong> (2.1.categorize_by_lang.py)
+<li>Categorization by <strong>Language</strong> (categorize_by_lang.py)
 <hr>
 </li>
 </ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Pyhton Implementation:</strong></p>
@@ -995,11 +995,9 @@ containing <strong>6878</strong> change requests</li>
 <div class="highlight highlight-python"><pre><span class="kn">import</span> <span class="nn">pymysql</span>
 <span class="kn">import</span> <span class="nn">pdb</span>
 
-<span class="n">conn</span> <span class="o">=</span> <span class="n">pymysql</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">'127.0.0.1'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">'root'</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="s">'******'</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s">'google'</span><span class="p">)</span>
-
+<span class="n">conn</span> <span class="o">=</span> <span class="n">pymysql</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">'cse.unl.edu'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">'rkrasniq'</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="s">'******'</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s">'rkrasniq'</span><span class="p">)</span>
 <span class="n">iterator</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-
-<span class="n">iterator</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE UPPER(stage) = 'POST' GROUP BY test_language"</span><span class="p">)</span> 
+<span class="n">iterator</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE stage = 'POST' GROUP BY test_language"</span><span class="p">)</span> 
 
 <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -1009,27 +1007,29 @@ containing <strong>6878</strong> change requests</li>
 <span class="n">iterator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
-  <span class="n">test_language</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+  <span class="n">test_language</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span>
 
 
   <span class="n">lang_cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> 
-  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE test_language = '</span><span class="si">%s</span><span class="s">' AND WHERE UPPER(stage) = 'POST'"</span> <span class="o">%</span> <span class="n">test_language</span><span class="p">)</span>
+  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE stage = 'POST' AND test_language = '</span><span class="si">%s</span><span class="s">'"</span> <span class="o">%</span> <span class="n">test_language</span><span class="p">)</span>
 
   <span class="n">recs</span> <span class="o">=</span> <span class="p">[]</span>
   <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">lang_cursor</span><span class="p">:</span>
     <span class="n">recs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> 
 
-  <span class="n">total_failure</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">,</span> <span class="n">recs</span><span class="p">)))</span>
+  <span class="n">total_failure</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">,</span> <span class="n">recs</span><span class="p">)))</span>
   <span class="n">total_records</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
 
   <span class="k">if</span> <span class="n">total_failure</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">recs</span><span class="p">))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
+    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">7</span><span class="p">]),</span> <span class="n">recs</span><span class="p">))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
   <span class="k">else</span><span class="p">:</span>
-    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="mi">0</span> 
 
-  <span class="k">print</span> <span class="n">test_language</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">total_failure</span><span class="p">)</span> <span class="o">+</span> 
-              <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">total_failure</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_records</span><span class="p">)</span> <span class="o">+</span> 
-              <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">avg_exec_time</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">total_failure</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="k">print</span> <span class="n">test_language</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> \
+         <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">total_failure</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> \
+         <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="n">avg_exec_time</span><span class="o">/</span><span class="mi">1000</span><span class="p">)</span><span class="o">%</span><span class="mi">60</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> \
+         <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">total_failure</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_records</span><span class="p">)</span> 
   <span class="n">lang_cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  
@@ -1069,41 +1069,42 @@ containing <strong>6878</strong> change requests</li>
 <div class="highlight highlight-python"><pre><span class="kn">import</span> <span class="nn">pymysql</span>
 <span class="kn">import</span> <span class="nn">pdb</span>
 
-<span class="n">conn</span> <span class="o">=</span> <span class="n">pymysql</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">'127.0.0.1'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">'root'</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="s">'******'</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s">'google'</span><span class="p">)</span>
-
+<span class="n">conn</span> <span class="o">=</span> <span class="n">pymysql</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">'cse.unl.edu'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">'rkrasniq'</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="s">'******'</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s">'rkrasniq'</span><span class="p">)</span>
 <span class="n">iterator</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-
-<span class="n">iterator</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE UPPER(stage) = 'POST' GROUP BY test_language, test_size"</span><span class="p">)</span> 
+<span class="n">iterator</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE stage = 'POST' GROUP BY test_language, test_size"</span><span class="p">)</span> 
 
 <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
-
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+
   <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
 <span class="n">iterator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
-  <span class="n">test_language</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+  <span class="n">test_language</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span>
   <span class="n">test_size</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
 
   <span class="n">lang_cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> 
-  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE test_language = '</span><span class="si">%s</span><span class="s">' AND test_size = '</span><span class="si">%s</span><span class="s">' AND UPPER(stage) = 'POST'"</span> <span class="o">%</span> <span class="p">(</span><span class="n">test_language</span><span class="p">,</span> <span class="n">test_size</span><span class="p">))</span>
+  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE test_language = '</span><span class="si">%s</span><span class="s">' AND test_size = '</span><span class="si">%s</span><span class="s">' AND stage = 'POST'"</span> <span class="o">%</span> <span class="p">(</span><span class="n">test_language</span><span class="p">,</span> <span class="n">test_size</span><span class="p">))</span>
 
   <span class="n">recs</span> <span class="o">=</span> <span class="p">[]</span>
   <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">lang_cursor</span><span class="p">:</span>
     <span class="n">recs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> 
 
-  <span class="n">total_failure</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">,</span> <span class="n">recs</span><span class="p">)))</span>
+  <span class="n">total_failure</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">,</span> <span class="n">recs</span><span class="p">)))</span>
   <span class="n">total_records</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
 
   <span class="k">if</span> <span class="n">total_failure</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">recs</span><span class="p">))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
+    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">7</span><span class="p">]),</span> <span class="n">recs</span><span class="p">))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
   <span class="k">else</span><span class="p">:</span>
     <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="mi">0</span> 
 
-  <span class="k">print</span> <span class="n">test_language</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="n">test_size</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">total_failure</span><span class="p">)</span> <span class="o">+</span> 
-              <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">total_failure</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_records</span><span class="p">)</span> <span class="o">+</span> 
-              <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">avg_exec_time</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">total_failure</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">test_language</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> \
+       <span class="o">+</span> <span class="n">test_size</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> \
+         <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">total_failure</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> \
+         <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="n">avg_exec_time</span><span class="o">/</span><span class="mi">1000</span><span class="p">)</span><span class="o">%</span><span class="mi">60</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> \
+         <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">total_failure</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_records</span><span class="p">)</span> 
   <span class="n">lang_cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  
@@ -1126,25 +1127,23 @@ containing <strong>6878</strong> change requests</li>
 <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">rate_failure</span> <span class="k">DESC</span><span class="p">;</span>
 </pre></div>
 
-<ul>
-<li>Graph: Categorization By <strong>Language Size</strong> (data_categorization.xsls)</li>
-</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Python Results:</strong></p>
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Python Results:</strong></p>
 
-<p><a href="https://camo.githubusercontent.com/9f614a044f4ec25188123969fb6eba5e11aaed69/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f616e645f73697a655f74626c2e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/9f614a044f4ec25188123969fb6eba5e11aaed69/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f616e645f73697a655f74626c2e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/lang_and_size_tbl.jpg" style="max-width:100%;"></a></p>
+<p><a href="https://camo.githubusercontent.com/26e4a1dbb5900ad77101cbfa98b174160699f195/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f616e645f73697a652e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/26e4a1dbb5900ad77101cbfa98b174160699f195/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f616e645f73697a652e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/lang_and_size.jpg" style="max-width:100%;"></a></p>
 
-<p><br><a href="https://camo.githubusercontent.com/c24a3986fa6426af00807120349a77fac4637583/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f616e645f73697a655f6669672e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/c24a3986fa6426af00807120349a77fac4637583/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f616e645f73697a655f6669672e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/lang_and_size_fig.jpg" style="max-width:100%;"></a></p>
+<p><br></p>
 
 <hr><ul>
-<li>Categorization by <strong>Language Size and Stage</strong> (categorize_by_lang_size_and_stage.py)</li>
-</ul><hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Python Implementation:</strong></p>
+<li>Categorization by <strong>Language Size and Stage</strong> (categorize_by_lang_size_and_stage.py)
+<hr>
+</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Python Implementation:</strong></p>
 
 <div class="highlight highlight-python"><pre><span class="kn">import</span> <span class="nn">pymysql</span>
 <span class="kn">import</span> <span class="nn">pdb</span>
 
-<span class="n">conn</span> <span class="o">=</span> <span class="n">pymysql</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">'127.0.0.1'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">'root'</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="s">'******'</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s">'google'</span><span class="p">)</span>
-
+<span class="n">conn</span> <span class="o">=</span> <span class="n">pymysql</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s">'cse.unl.edu'</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">3306</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">'rkrasniq'</span><span class="p">,</span> <span class="n">passwd</span><span class="o">=</span><span class="s">'ob8{i5'</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s">'rkrasniq'</span><span class="p">)</span>
 <span class="n">iterator</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-
 <span class="n">iterator</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset GROUP BY test_language, test_size, stage"</span><span class="p">)</span> 
 
 <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1155,31 +1154,32 @@ containing <strong>6878</strong> change requests</li>
 <span class="n">iterator</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
-  <span class="n">test_language</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
-  <span class="n">size</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
-  <span class="n">stage</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+  <span class="n">test_language</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span>
+  <span class="n">test_size</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
+  <span class="n">stage</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
 
   <span class="n">lang_cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> 
-  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE test_language = '</span><span class="si">%s</span><span class="s">' AND test_size = '</span><span class="si">%s</span><span class="s">'"</span> <span class="n">AND</span> <span class="n">stage</span> <span class="o">=</span> <span class="s">'</span><span class="si">%s</span><span class="s">'" % (test_language, size, stage))</span>
+  <span class="n">lang_cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"SELECT * FROM google_dataset WHERE test_language = '</span><span class="si">%s</span><span class="s">' AND test_size = '</span><span class="si">%s</span><span class="s">' AND stage = '</span><span class="si">%s</span><span class="s">'"</span> <span class="o">%</span> <span class="p">(</span><span class="n">test_language</span><span class="p">,</span> <span class="n">test_size</span><span class="p">,</span> <span class="n">stage</span><span class="p">))</span>
 
   <span class="n">recs</span> <span class="o">=</span> <span class="p">[]</span>
   <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">lang_cursor</span><span class="p">:</span>
     <span class="n">recs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> 
 
-  <span class="n">total_failure</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">,</span> <span class="n">recs</span><span class="p">)))</span>
+  <span class="n">total_failure</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">,</span> <span class="n">recs</span><span class="p">)))</span>
   <span class="n">total_records</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
 
   <span class="k">if</span> <span class="n">total_failure</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">,</span> <span class="n">recs</span><span class="p">)))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
+    <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">7</span><span class="p">]),</span> <span class="n">recs</span><span class="p">))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recs</span><span class="p">))</span>
   <span class="k">else</span><span class="p">:</span>
     <span class="n">avg_exec_time</span> <span class="o">=</span> <span class="mi">0</span>
 
-  <span class="k">print</span> <span class="n">test_language</span> <span class="o">+</span> 
-              <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="n">size</span> <span class="o">+</span>
-              <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="n">stage</span> <span class="o">+</span>
-              <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">total_failure</span><span class="p">)</span> <span class="o">+</span> 
-              <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">total_failure</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_records</span><span class="p">)</span> <span class="o">+</span>
-              <span class="s">"</span><span class="se">\t</span><span class="s">"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">avg_exec_time</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">total_failure</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+             <span class="k">print</span> <span class="n">test_language</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> \
+                 <span class="o">+</span> <span class="n">test_size</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> \
+                 <span class="o">+</span> <span class="n">stage</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> \
+                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">total_failure</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> \
+                 <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="n">avg_exec_time</span><span class="o">/</span><span class="mi">1000</span><span class="p">)</span><span class="o">%</span><span class="mi">60</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span> \
+                 <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">total_failure</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_records</span><span class="p">)</span> 
   <span class="n">lang_cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  
@@ -1208,15 +1208,15 @@ containing <strong>6878</strong> change requests</li>
 
 <ul>
 <li>Graph: Categorization By <strong>Language, Size and Stage</strong> (data_categorization.xsls)</li>
-</ul><p><a href="https://camo.githubusercontent.com/d1ff5cc2207879ea4725d8d6f605104e1c8a8535/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167652e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/d1ff5cc2207879ea4725d8d6f605104e1c8a8535/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167652e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/lang_size_and_stage.jpg" style="max-width:100%;"></a></p>
+</ul><p><a href="https://camo.githubusercontent.com/d74e2b30c6e1937d83012bdcafa1446590f3b654/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167655f67726170682e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/d74e2b30c6e1937d83012bdcafa1446590f3b654/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167655f67726170682e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/lang_size_and_stage_graph.jpg" style="max-width:100%;"></a></p>
 
 <p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Python Results:</strong></p>
 
-<p><a href="https://camo.githubusercontent.com/d1ff5cc2207879ea4725d8d6f605104e1c8a8535/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167652e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/d1ff5cc2207879ea4725d8d6f605104e1c8a8535/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167652e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/lang_size_and_stage.jpg" style="max-width:100%;"></a></p>
+<p><a href="https://camo.githubusercontent.com/e8bba89a0c798083c99fee560102adb0f1bef096/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167655f726573756c74732e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/e8bba89a0c798083c99fee560102adb0f1bef096/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6c616e675f73697a655f616e645f73746167655f726573756c74732e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/lang_size_and_stage_results.jpg" style="max-width:100%;"></a></p>
 
 <p><br></p>
 
-<hr><p>Unique Failing Test Suites (executions) (unique_faling_test_suites_post_pre.sql)</p>
+<hr><p>Unique Failing Test Suites (Executions) During ECT Phase (unique_faling_test_suites_post_pre.sql)</p>
 
 <hr><p><img class="emoji" title=":bulb:" alt=":bulb:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f4a1.png" height="20" width="20" align="absmiddle"><strong>NOTE:</strong></p>
 
