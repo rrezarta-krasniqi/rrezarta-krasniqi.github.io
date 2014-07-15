@@ -25,7 +25,7 @@ logging.getLogger('sqlalchemy.engine').setLevel(logging.NOTSET)
 Base = declarative_base()
 
 class Google(Base):
-	__tablename__ = 'test'
+	__tablename__ = 'google_dataset'
 	id = Column(Integer, primary_key = True)
 	test_suite_name = Column(String(2**11), nullable = False)
 	test_suite_mapped_id = Column(String(2**7), nullable = False)
@@ -67,41 +67,43 @@ Base.metadata.create_all(engine)
 
 # myobject = Google('ts1', 1, 'post', 'failed', date_object, 1111, 'large', 222, 333, 'py')
 
-mapped_id = defaultdict(lambda: "")
-idx = 1
 
-# Comment out
-"""
-with open(argv[1], 'rb') as csvfile:
-	data = csv.reader(csvfile, delimiter=',')	
-	for row in data:
-		try:			
-			test_suite_name = row[0]
-			if mapped_id[test_suite_name] == "":
-				mapped_id[test_suite_name] = "T" + str(idx)
-				idx+=1
-				test_suite_mapped_id = mapped_id[test_suite_name]
-			else:
-				test_suite_mapped_id = mapped_id[test_suite_name]
-			change_request = int(row[1])
-			stage = row[2].upper()
-			test_status = row[3].upper()		
-			launch_time = datetime.strptime(row[4], '%d:%H:%M:%S')
-			execution_time = int(row[5])
-			test_size = row[6].upper()
-			shard_number = int(row[7])
-			run_number = int(row[8])
-			test_language = row[9].upper()					
 
-			session.add(Google(test_suite_name, test_suite_mapped_id, change_request, stage, test_status, launch_time, execution_time, test_size, shard_number, run_number, test_language))	
-			session.commit()			
 
-		except ValueError:			
-			print str(row)
+def import_csv(file):
+	mapped_id = defaultdict(lambda: "")	
+	idx = 1
 
-csvfile.close()				
-# Comment out end
-"""
+	with open(argv[1], 'rb') as csvfile:
+		data = csv.reader(csvfile, delimiter=',')	
+		for row in data:
+			try:			
+				test_suite_name = row[0]
+				if mapped_id[test_suite_name] == "":
+					mapped_id[test_suite_name] = "T" + str(idx)
+					idx+=1
+					test_suite_mapped_id = mapped_id[test_suite_name]
+				else:
+					test_suite_mapped_id = mapped_id[test_suite_name]
+				change_request = int(row[1])
+				stage = row[2].upper()
+				test_status = row[3].upper()		
+				launch_time = datetime.strptime(row[4], '%d:%H:%M:%S')
+				execution_time = int(row[5])
+				test_size = row[6].upper()
+				shard_number = int(row[7])
+				run_number = int(row[8])
+				test_language = row[9].upper()					
+
+				session.add(Google(test_suite_name, test_suite_mapped_id, change_request, stage, test_status, launch_time, execution_time, test_size, shard_number, run_number, test_language))	
+				session.commit()			
+
+			except ValueError:			
+				print str(row)
+
+	csvfile.close()				
+
+
 # flaky_query = "SELECT * FROM google_dataset WHERE stage=\"POST\" GROUP BY test_suite_mapped_id, change_request, shard_number ORDER BY test_suite_mapped_id, change_request,shard_number ASC"
 # session.query(Google).from_statement(flaky_query).all()
 
@@ -117,11 +119,11 @@ f_to_f = 0
 p_to_f = 0
 p_to_p = 0
 
-trans_change_dict = defaultdict(lambda: [()])
-for r in data[1:]:
-	if r.test_suite_mapped_id == prev.test_suite_mapped_id and r.change_request == prev.change_request:
-		trans_change_dict[prev.test_suite_mapped_id].append(prev.change_request)
-		if r.test_status != prev.test_status:
+trans_change_dict = defaultdict(lambda: [])
+for curr in data[1:]:
+	if curr.test_suite_mapped_id == prev.test_suite_mapped_id and curr.change_request == prev.change_request:
+		# trans_change_dict[curr.test_suite_mapped_id].append(curr.change_request)
+		if curr.test_status != prev.test_status:
 			if prev.test_status == "FAILED":			
 				f_to_p += 1							
 			else:
@@ -131,24 +133,28 @@ for r in data[1:]:
 				f_to_f += 1
 			else:
 				p_to_p += 1	
-	elif r.test_suite_mapped_id == prev.test_suite_mapped_id and r.change_request != prev.change_request:
-		trans_change_dict[prev.test_suite_mapped_id] = 
+	elif curr.test_suite_mapped_id == prev.test_suite_mapped_id and curr.change_request != prev.change_request:		
+		trans_change_dict[curr.test_suite_mapped_id].append((prev.change_request, (f_to_p, f_to_f, p_to_f, p_to_p)))
 
-		for test_suite_mapped_id in trans_change_dict.keys():
-			lst = trans_change_dict[test_suite_mapped_id]
-			occurrence = dict((i,lst.count(i)) for i in lst)
-			for change_request in occurrence:
-				print "test_suite_mapped_id= %s\t change_request= %d, f->p transition: %d" % (test_suite_mapped_id, change_request, f_to_p / float(occurrence[change_request]))
-				print "test_suite_mapped_id: %s\t change_request= %d, p->f transition: %d" % (test_suite_mapped_id, change_request, p_to_f) / float(occurrence[change_request])
-				print "test_suite_mapped_id: %s\t change_request= %d, f->f transition: %d" % (test_suite_mapped_id, change_request, f_to_f) / float(occurrence[change_request])
-				print "test_suite_mapped_id: %s\t change_request= %d, p->p transition: %d" % (test_suite_mapped_id, change_request, p_to_p) / float(occurrence[change_request])
 		f_to_p = 0
 		f_to_f = 0
 		p_to_f = 0
 		p_to_p = 0
 	else:
-		print "what up!"
+		f_to_p = 0
+		f_to_f = 0
+		p_to_f = 0
+		p_to_p = 0
 
-	prev = r	
 
-# print session.query(func.count(Google.id)).scalar() 
+	prev = curr
+print "Test Suite\tChange Request\tF->P\tF->F\tP->F\tP->P"
+for key in trans_change_dict.keys():
+	for entry in trans_change_dict[key]:	
+		total = float(entry[1][0] + entry[1][1] + entry[1][2] + entry[1][3]) / 100
+		if total != 0:
+			print "%s\t%d\t%f\t%f\t%f\t%f\t" % (key, entry[0], entry[1][0] / total, entry[1][1] / total, entry[1][2] / total, entry[1][3] / total)
+		else:
+			print "%s\t%d\t%f\t%f\t%f\t%f\t" % (key, entry[0], 0.0, 0.0, 0.0, 0.0) 
+# for key in trans_change_dict.keys():
+# 	print key + "\t" + str(trans_change_dict[key])
