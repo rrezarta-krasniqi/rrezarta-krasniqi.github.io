@@ -483,7 +483,7 @@ HAVING rate_failure > 0;
 
 * **First Graph Representation**
 
-![Alt text](http://rrezarta-krasniqi.github.io/chang_req_per_day_1.jpg)
+![Alt text](http://rrezarta-krasniqi.github.io/change_req_per_day_1.jpg)
 
 
 * **Second Graph Representation**
@@ -493,7 +493,7 @@ HAVING rate_failure > 0;
 
 * **Third Graph Representation**
 
-![Alt text](http://rrezarta-krasniqi.github.io/chang_req_per_day_3.jpg)
+![Alt text](http://rrezarta-krasniqi.github.io/change_req_per_day_3.jpg)
 
 
 <br>
@@ -699,7 +699,7 @@ Refer to excel sheet to check the results
 Total Unique Failing Test Suites (executions) (unique_tot_faling_test_suites.sql)
 <hr>
 
-:bulb: **NOTE:**
+:bulb: **NOTE:**g
  * There are total of 358 unique test suites for both stages.
  * **153** are unique test suites failing from POST stage that contain total of **285,105** change requests
  * **205** are unique test suites failing from PRES stage that contain total of **115,745** change requests
