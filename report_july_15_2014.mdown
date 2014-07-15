@@ -480,17 +480,19 @@ HAVING rate_failure > 0;
 
 * Graph: Categorization By **Change Request Per Day** (change_request_day.xsls)
 
-* First Graph Representation
+
+* **First Graph Representation**
 
 ![Alt text](http://rrezarta-krasniqi.github.io/chang_req_per_day_1.jpg)
 
 
-* Second Graph Representation
+* **Second Graph Representation**
 
 ![Alt text](http://rrezarta-krasniqi.github.io/change_req_per_day_2.jpg)
 
 
-* Third Graph Representation
+* **Third Graph Representation**
+
 ![Alt text](http://rrezarta-krasniqi.github.io/chang_req_per_day_3.jpg)
 
 
@@ -526,12 +528,12 @@ HAVING rate_failure > 0;
 * Graph: Categorization By **Test Suite Execution Per Daye** (total_test_executions_per_day.xsls)
 
 
-* First Graph Representation
+* **First Graph Representation**
 
 ![Alt text](http://rrezarta-krasniqi.github.io/test_exec_per_day_1.jpg)
 
 
-* Second Graph Representation
+* **Second Graph Representation**
 
 ![Alt text](http://rrezarta-krasniqi.github.io/test_exec_per_day_2.jpg)
 
@@ -671,11 +673,17 @@ HAVING rate_failure <> 0
 * Graph: Unique Test Suite Failures During POST Phase (unique_test_suite_failures_post.xsls)
 
 
+* **First Graph Representation**
+
 ![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_post.jpg)
 
 
+**Second Graph Representation**
+
 ![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_post_2d.jpg)
 
+
+**Third Graph Representation**
 
 ![Alt text](http://rrezarta-krasniqi.github.io/unique_failing_test_suites_post_3d.jpg)
 
