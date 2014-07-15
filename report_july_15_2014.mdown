@@ -448,7 +448,96 @@ ORDER BY rate_failure DESC
 
 ![Alt text](http://rrezarta-krasniqi.github.io/lang_size_and_stage_results.jpg)
 
+
 <br>
+
+<hr>
+Flow of Google Data Grouped By **Change Requests Per Day** (change_request_day.sql)
+<hr>
+
+
+:small_red_triangle_down: **MySQL Implementation:**
+~~~MySQL
+SELECT change_request, 
+       DAY(launch_time) AS day,
+       tot_runs_per_day,
+       AVG((((execution_time % (1000*60*60)) % (1000*60)) / 1000)) AS avg_execution_time_sec,
+       SUM(failed*100.0)/tot_runs_per_day AS rate_failure
+FROM
+(
+    SELECT change_request,
+           launch_time,
+           COUNT(launch_time) AS tot_runs_per_day,
+           execution_time,
+           SUM(IF(test_status="FAILED",1,0)) AS failed,
+           SUM(IF(test_status="PASSED",1,0)) AS passed
+    FROM google_dataset d
+    GROUP BY change_request, DAY(launch_time)
+) AS T
+GROUP BY change_request, day
+HAVING rate_failure > 0;
+~~~
+
+* Graph: Categorization By **Change Request Per Day** (change_request_day.xsls)
+
+* First Graph Representation
+
+![Alt text](http://rrezarta-krasniqi.github.io/chang_req_per_day_1.jpg)
+
+
+* Second Graph Representation
+
+![Alt text](http://rrezarta-krasniqi.github.io/change_req_per_day_2.jpg)
+
+
+* Third Graph Representation
+![Alt text](http://rrezarta-krasniqi.github.io/chang_req_per_day_3.jpg)
+
+
+<br>
+
+<hr>
+Flow of Google Data Grouped By **Total Test Execution Per Day** (total_test_executions_per_day.sql)
+<hr>
+
+
+:small_red_triangle_down: **MySQL Implementation:**
+~~~MySQL
+SELECT test_suite_mapped_id,
+       DAY(launch_time) AS day,
+       tot_runs_per_day,
+       AVG((((execution_time % (1000*60*60)) % (1000*60)) / 1000)) AS avg_execution_time_sec,
+       SUM(failed*100.0)/tot_runs_per_day AS rate_failure
+FROM
+(
+    SELECT test_suite_mapped_id,
+           launch_time,
+           COUNT(launch_time) AS tot_runs_per_day,
+           execution_time,
+           SUM(IF(test_status="FAILED",1,0)) AS failed,
+           SUM(IF(test_status="PASSED",1,0)) AS passed
+    FROM google_dataset d
+    GROUP BY test_suite_mapped_id, DAY(launch_time)
+) AS T
+GROUP BY test_suite_mapped_id, day
+HAVING rate_failure > 0;
+~~~
+
+* Graph: Categorization By **Test Suite Execution Per Daye** (total_test_executions_per_day.xsls)
+
+
+* First Graph Representation
+
+![Alt text](http://rrezarta-krasniqi.github.io/test_exec_per_day_1.jpg)
+
+
+* Second Graph Representation
+
+![Alt text](http://rrezarta-krasniqi.github.io/test_exec_per_day_2.jpg)
+
+
+<br>
+
 
 <hr>
 Unique Failing Test Suites (Executions) During ECT Phase (unique_faling_test_suites_post_pre.sql)
