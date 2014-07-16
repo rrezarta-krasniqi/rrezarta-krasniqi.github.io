@@ -1,0 +1,9 @@
+
+* **ECT PHASE - Transition**
+
+Precent		F->P     F->F      P->F     P->P
+(%):	       0.0283   0.0258    0.0785    99.867
+
+* **ICT PHASE - Transition**
+Precent	        F->P     F->F     P->F      P->P
+(%):           24.971   33.266   49.873     99.693

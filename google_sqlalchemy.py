@@ -1,21 +1,14 @@
 import csv
 import logging
-
 import pdb
 
 from sqlalchemy import Column, String, Integer, DateTime
 from sqlalchemy.ext.declarative import declarative_base
-
 from sqlalchemy import create_engine
-
 from sqlalchemy.orm import sessionmaker
-
 from sqlalchemy import func
-
 from datetime import datetime
-
 from collections import defaultdict
-
 from sys import argv
 
 
@@ -107,8 +100,8 @@ def import_csv(file):
 # flaky_query = "SELECT * FROM google_dataset WHERE stage=\"POST\" GROUP BY test_suite_mapped_id, change_request, shard_number ORDER BY test_suite_mapped_id, change_request,shard_number ASC"
 # session.query(Google).from_statement(flaky_query).all()
 
-data = session.query(Google).filter(Google.stage == "POST") \
-.order_by(Google.test_suite_mapped_id.asc(), Google.change_request.asc(), Google.shard_number.asc()) \
+data = session.query(Google).filter(Google.stage == "PRES") \
+.order_by(Google.test_suite_mapped_id.asc()) \
 .all()
 # .group_by(Google.test_suite_mapped_id, Google.change_request, Google.shard_number) \
 
@@ -119,10 +112,9 @@ f_to_f = 0
 p_to_f = 0
 p_to_p = 0
 
-trans_change_dict = defaultdict(lambda: [])
+trans_change_dict = defaultdict(lambda: ())
 for curr in data[1:]:
-	if curr.test_suite_mapped_id == prev.test_suite_mapped_id and curr.change_request == prev.change_request:
-		# trans_change_dict[curr.test_suite_mapped_id].append(curr.change_request)
+	if curr.test_suite_mapped_id == prev.test_suite_mapped_id:		
 		if curr.test_status != prev.test_status:
 			if prev.test_status == "FAILED":			
 				f_to_p += 1							
@@ -133,28 +125,20 @@ for curr in data[1:]:
 				f_to_f += 1
 			else:
 				p_to_p += 1	
-	elif curr.test_suite_mapped_id == prev.test_suite_mapped_id and curr.change_request != prev.change_request:		
-		trans_change_dict[curr.test_suite_mapped_id].append((prev.change_request, (f_to_p, f_to_f, p_to_f, p_to_p)))
-
-		f_to_p = 0
-		f_to_f = 0
-		p_to_f = 0
-		p_to_p = 0
 	else:
+		trans_change_dict[curr.test_suite_mapped_id] = (f_to_p, f_to_f, p_to_f, p_to_p)
 		f_to_p = 0
 		f_to_f = 0
 		p_to_f = 0
 		p_to_p = 0
 
+		prev = curr
 
-	prev = curr
-print "Test Suite\tChange Request\tF->P\tF->F\tP->F\tP->P"
+print "Test Suite\tF->P\tF->F\tP->F\tP->P"
 for key in trans_change_dict.keys():
-	for entry in trans_change_dict[key]:	
-		total = float(entry[1][0] + entry[1][1] + entry[1][2] + entry[1][3]) / 100
-		if total != 0:
-			print "%s\t%d\t%f\t%f\t%f\t%f\t" % (key, entry[0], entry[1][0] / total, entry[1][1] / total, entry[1][2] / total, entry[1][3] / total)
-		else:
-			print "%s\t%d\t%f\t%f\t%f\t%f\t" % (key, entry[0], 0.0, 0.0, 0.0, 0.0) 
-# for key in trans_change_dict.keys():
-# 	print key + "\t" + str(trans_change_dict[key])
+	entry = trans_change_dict[key]	
+	total = float(entry[0] + entry[1] + entry[2] + entry[3]) / 100
+	if total != 0:
+		print "%s\t%f\t%f\t%f\t%f\t" % (key, entry[0] / total, entry[1] / total, entry[2] / total, entry[3] / total)
+	else:
+		print "%s\t%f\t%f\t%f\t%f\t" % (key, 0.0, 0.0, 0.0, 0.0) 
