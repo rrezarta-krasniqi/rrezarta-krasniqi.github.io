@@ -218,7 +218,7 @@ AND stage = "POST";
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='cse.unl.edu', port=3306, user='rkrasniq', passwd='******', db='rkrasniq')
+conn = pymysql.connect(host='cse.unl.edu', port=3306, user='******', passwd='******', db='rkrasniq')
 iterator = conn.cursor()
 iterator.execute("SELECT * FROM google_dataset WHERE stage = 'POST' GROUP BY test_language") 
 
@@ -297,7 +297,7 @@ ORDER BY rate_failure DESC;
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='cse.unl.edu', port=3306, user='rkrasniq', passwd='******', db='rkrasniq')
+conn = pymysql.connect(host='cse.unl.edu', port=3306, user='rkrasniq', passwd='******', db='*****')
 iterator = conn.cursor()
 iterator.execute("SELECT * FROM google_dataset WHERE stage = 'POST' GROUP BY test_language, test_size") 
 
@@ -373,7 +373,7 @@ ORDER BY rate_failure DESC;
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='cse.unl.edu', port=3306, user='rkrasniq', passwd='ob8{i5', db='rkrasniq')
+conn = pymysql.connect(host='cse.unl.edu', port=3306, user='******', passwd='*****', db='******')
 iterator = conn.cursor()
 iterator.execute("SELECT * FROM google_dataset GROUP BY test_language, test_size, stage") 
 
@@ -830,8 +830,8 @@ class Google(Base):
     return "<Google(mapped_id='%s', change_request='%d', shard_number='%d', status='%s', launch_time='%s', execution_time='%d', test_size='%s', test_language='%s')>" \
     % (self.test_suite_mapped_id, self.change_request, self.shard_number, self.test_status, self.launch_time, self.execution_time, self.test_size, self.test_language)
 
-# engine = create_engine('mysql+pymysql://rkrasniq@cse.unl.edu/rkrasniq?passwd=ob8{i5&')
-engine = create_engine('mysql+pymysql://root@127.0.0.1/google?passwd=sunset820&')
+# engine = create_engine('mysql+pymysql://*****@cse.unl.edu/****?passwd=*******&')
+engine = create_engine('mysql+pymysql://*****@1*****/google?passwd=*****&')
 Session = sessionmaker(bind=engine)
 session = Session()
 Base.metadata.create_all(engine)

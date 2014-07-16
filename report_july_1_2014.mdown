@@ -173,7 +173,7 @@ GROUP BY stage
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='******', passwd='******', db='****')
 
 iterator = conn.cursor()
 
@@ -252,7 +252,7 @@ Group By test_language
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='*****', passwd='******', db='******')
 
 iterator = conn.cursor()
 
@@ -361,7 +361,7 @@ Group By stage
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='*****', passwd='******', db='*****')
 
 iterator = conn.cursor()
 
@@ -440,7 +440,7 @@ Group By test_language, test_size
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='******', db='google')
+conn = pymysql.connect(host='127.0.0.1', port=3306, user='*****', passwd='******', db='*****')
 
 iterator = conn.cursor()
 
