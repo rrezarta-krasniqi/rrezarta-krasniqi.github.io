@@ -42,7 +42,7 @@ GROUP BY DAY(launch_time);
 
   * Total passing and failing change requests by day
 
-![Alt text](http://rrezarta-krasniqi.github.io/number_of_change_request_by_day_pass_failed.jpg)
+![Alt text](http://rrezarta-krasniqi.github.io/number_of_change_request_by_day_passed_failed.jpg)
 
 
 <br>
