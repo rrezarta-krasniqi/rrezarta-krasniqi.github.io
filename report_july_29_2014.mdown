@@ -38,7 +38,7 @@ GROUP BY DAY(launch_time);
 
 <br>
 
-* Graph: Categorization By **Change Request By Day** (number_of_change_request_by_day_number_of_change_request_by_day_passed_failed..xsls)
+* Graph: Categorization By **Change Request By Day** (number_of_change_request_by_day_passed_failed.xsls)
 
   * Total passing and failing change requests by day
 
