@@ -218,7 +218,7 @@ AND stage = "POST";
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='cse.unl.edu', port=3306, user='******', passwd='******', db='rkrasniq')
+conn = pymysql.connect(host='cse.unl.edu', port=3306, user='******', passwd='******', db='*******')
 iterator = conn.cursor()
 iterator.execute("SELECT * FROM google_dataset WHERE stage = 'POST' GROUP BY test_language") 
 
@@ -297,7 +297,7 @@ ORDER BY rate_failure DESC;
 import pymysql
 import pdb
 
-conn = pymysql.connect(host='cse.unl.edu', port=3306, user='rkrasniq', passwd='******', db='*****')
+conn = pymysql.connect(host='cse.unl.edu', port=3306, user='******', passwd='******', db='*****')
 iterator = conn.cursor()
 iterator.execute("SELECT * FROM google_dataset WHERE stage = 'POST' GROUP BY test_language, test_size") 
 
