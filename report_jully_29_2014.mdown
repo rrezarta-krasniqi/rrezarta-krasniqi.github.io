@@ -1,0 +1,1202 @@
+![Alt text](http://rrezarta-krasniqi.github.io/esquared.jpg) 
+<hr>
+##### :date: July 29, 2014 
+
+
+The Google Dataset of Testing Results
+=====================
+Data Download and Preprocessing
+-------------------------------
+~~~bash
+git clone https://code.google.com/p/google-shared-dataset-of-test-suite-results/
+cd google-shared-dataset-of-test-suite-results/posted
+gunzip testShareData.csv.rev.gz
+sed -i '' 's/^,//g' testShareData.csv.rev # replace the "," with "" if it is in the beginning of the line
+sed -i '' '$ d' testShareData.csv.rev # removes the last line which is empty
+~~~
+
+MySQL Database Schema and Import CSV File
+-----------------------------------------
+
+:small_red_triangle_down: **Query Implementation:**
+
+~~~mysql
+CREATE TABLE `google_dataset` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `test_suite_mapped_id` varchar(255) DEFAULT NULL,
+  `test_suite` longtext,
+  `change_request` int(11) DEFAULT NULL,
+  `stage` varchar(255) DEFAULT NULL,
+  `test_status` varchar(255) DEFAULT NULL,
+  `launch_time` datetime DEFAULT NULL,
+  `execution_time` int(11) DEFAULT NULL,
+  `test_size` varchar(255) DEFAULT NULL,
+  `shard_number` int(11) DEFAULT NULL,
+  `run_number` int(11) DEFAULT NULL,
+  `test_language` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `change_request_idx` (`change_request`) USING BTREE,
+  KEY `shard_number_idx` (`shard_number`) USING BTREE,
+  KEY `stage_idx` (`stage`) USING BTREE,
+  KEY `test_status_idx` (`test_status`) USING BTREE,
+  KEY `test_language_idx` (`test_language`) USING BTREE,
+  KEY `test_size_idx` (`test_size`) USING BTREE,
+  KEY `test_suite_mapped_id_idx` (`test_suite_mapped_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=3468949 DEFAULT CHARSET=utf8;
+
+LOAD DATA INFILE '/path/to/testShareData.csv.rev' INTO TABLE google_dataset \
+FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' \
+(id, change_request, execution_time, launch_time, run_number, shard_number, stage, test_language, test_size, test_status, test_suite, test_suite_mapped_id);
+
+-- Query OK, 3468948 rows affected (1 min 34.64 sec)
+-- Records: 3468948  Deleted: 0  Skipped: 0  Warnings: 0
+
+CREATE INDEX test_suite_mapped_id_idx ON google_dataset (test_suite_mapped_id) USING BTREE;
+CREATE INDEX change_request_idx ON google_dataset (change_request) USING BTREE;
+CREATE INDEX shard_number_idx ON google_dataset (shard_number) USING BTREE;
+CREATE INDEX stage_idx ON google_dataset (stage) USING BTREE;
+CREATE INDEX test_size_idx ON google_dataset (test_size) USING BTREE;
+CREATE INDEX test_status_idx ON google_dataset (test_status) USING BTREE;
+CREATE INDEX test_language_idx ON google_dataset (test_language) USING BTREE;
+~~~
+
+
+Dataset Analysis
+-------------
+
+:o:  **How many distinct test suite executions exist from the Google Dataset?**
+
+---------
+
+* Total Distinct Test_Suites are: **5555**
+
+:small_red_triangle_down: **Query Implementation:**
+
+~~~ MySQL
+        SELECT COUNT(DISTINCT test_suite_mapped_id) AS distinct_test_suits 
+        FROM google_dataset;
+~~~
+
+<br/>
+
+---------
+
+:o: **What is the total size of Google Dataset?**
+
+---------
+
+* There are also **3468948** records in the entire dataset
+
+:small_red_triangle_down: **Query Implementation:**
+~~~ MySQL
+
+        SELECT COUNT(*) total_records FROM google_dataset;
+~~~
+
+<br/>
+
+---------
+
+:o: **How Google Dataset is structured in terms of tests suite executions?**
+
+---------
+
+* There are total of **169** different TEST_SUITES with partitioned executions
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~ MySQL
+
+        SELECT COUNT(DISTINCT test_suite) AS test_suites
+        FROM   google_dataset
+        WHERE  shard_number IN (SELECT shard_number
+                                FROM   google_dataset
+                                WHERE  shard_number > 1);
+~~~
+
+<br/>
+
+
+---------
+
+:o: **How many distinct change requests per test suite exist in both ECT (POST) and ICT (PRE) phase?**
+
+---------
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~MySQL
+SELECT COUNT(*) AS total_change_requests, stage
+ FROM (
+           SELECT COUNT(change_request) AS change_request_count, IF(stage="POST", "ECT phase",stage) AS stage
+             FROM google_dataset 
+            WHERE 1 = 1
+              AND stage = "POST"
+         GROUP BY change_request
+     ) AS T
+UNION ALL
+SELECT COUNT(*) AS total_change_requests, stage
+  FROM (  
+          SELECT COUNT(change_request) AS change_request_count, IF(stage="PRES", "ICT phase",stage) AS stage
+            FROM google_dataset 
+           WHERE 1 = 1
+             AND stage = "PRES"
+        GROUP BY change_request
+     ) AS T
+~~~
+
+:small_red_triangle_down: **Results:**
+
+| total_change_requests |    stage   |
+|-----------------------|:----------:|
+| 4520                  |  ECT phase |
+| 1693                  |  ICT phase |
+
+
+<br>
+
+
+---------
+
+:o: **What is the total of test suite executions across ECT & ICT phase?**
+
+---------
+
+:small_red_triangle_down: **MySQL Implementation:**
+
+~~~MySQL
+SELECT COUNT(stage) AS total_change_requests, 
+(CASE WHEN stage = 'POST' THEN 'ECT phase'
+      WHEN stage = 'PRES' THEN 'ICT phase'
+      ELSE stage 
+END) AS stage 
+FROM google_dataset
+WHERE stage IN ('POST', 'PRES')
+GROUP BY stage
+~~~
+
+
+:small_red_triangle_down: **Query Results:**
+
+| total_test_suite_executions|    stage   |
+|----------------------------|:----------:|
+| 2037183                    |  ECT phase |
+| 1431765                    |  ICT phase |
+
+
+
+<br>
+
+
+**Computation of Flaky Tests**
+
+--------
+
+:o: **What is total failure for test suite executions and failure and flake rate?**
+
+--------
+
+:small_red_triangle_down: **MySql Implementation:** (flaky_tests.sql)
+
+~~~MySQL
+SELECT  test_suite_mapped_id,
+        change_request,
+        shard_number,
+        stage, 
+        failed, 
+        flake,
+        passed,
+        AVG((((execution_time % (1000 * 60 * 60)) % (1000 * 60)) / 1000)) AS avg_execution_time_in_sec,     
+        (SUM(failed + flake)*1) AS total_failed,
+        TRUNCATE((failed * 100)/(failed + passed),2) AS failure_rate,
+        TRUNCATE((flake * 100)/(flake + failed + passed),2) AS flake_rate
+ FROM
+(
+SELECT  test_suite_mapped_id,
+        COUNT(change_request) AS change_request,
+        COUNT(shard_number) AS shard_number,
+        stage,
+        execution_time,
+        SUM(IF(test_status = "FAILED", 1, 0)) AS failed, 
+        SUM(IF(test_status = "FLAKY", 1, 0)) AS flake,
+        SUM(IF(test_status = "PASSED", 1, 0)) AS passed
+    FROM
+      (
+        SELECT test_suite_mapped_id,
+               change_request,
+               shard_number, 
+               IF((passed > 0 AND failed > 0), "FLAKY", "NONE") AS test_status,
+               stage, 
+               execution_time,
+               failed,
+               passed
+
+        FROM
+        (
+         //computation of flaky tests
+         SELECT test_suite_mapped_id, 
+                   COUNT(change_request) AS change_request, 
+                   COUNT(shard_number) AS shard_number, 
+                   test_status,
+                   stage,
+                   SUM(execution_time) AS execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+              FROM google_dataset
+             WHERE stage = "POST"
+          GROUP BY test_suite_mapped_id, change_request
+            ) AS T
+                WHERE passed > 0 AND failed > 0
+                GROUP BY test_suite_mapped_id, change_request
+        Union ALL
+         //computation of failing tests
+          SELECT test_suite_mapped_id,
+               change_request,
+               shard_number, 
+               IF((failed > 0 and passed = 0),"FAILED","NONE") AS test_status,
+               stage, 
+               execution_time,
+               failed,
+               passed    
+         FROM
+          (
+            SELECT test_suite_mapped_id, 
+                   change_request, 
+                   shard_number, 
+                   test_status,
+                   stage,
+                   execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+              FROM google_dataset
+             WHERE stage = "POST"
+          GROUP BY test_suite_mapped_id, change_request
+            ) AS R
+                WHERE passed = 0 AND failed > 0
+               GROUP BY test_suite_mapped_id, change_request
+       UNION ALL
+         //computation of passing tests
+          SELECT test_suite_mapped_id,
+                change_request,
+                shard_number, 
+                IF((failed = 0 and passed > 0),"PASSED","NONE") AS test_status,
+                stage, 
+                execution_time,
+                failed,
+                passed    
+          FROM
+          (
+            SELECT test_suite_mapped_id, 
+                   change_request, 
+                   shard_number, 
+                   test_status,
+                   stage,
+                   execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+              FROM google_dataset
+             WHERE stage = "POST"
+          GROUP BY test_suite_mapped_id, change_request
+             ) AS P
+                WHERE passed > 0 AND failed = 0
+               GROUP BY test_suite_mapped_id, change_request
+       ) AS MM
+        GROUP BY test_suite_mapped_id
+) AS RRR
+GROUP BY test_suite_mapped_id
+HAVING failure_rate > 0 AND flake_rate > 0
+~~~
+
+
+:small_red_triangle_down: **Results:**
+
+
+
+
+![Alt text](http://rrezarta-krasniqi.github.io/july_29_2014/test_flakes_results.jpg)
+
+
+:small_red_triangle_down: **Graph Representation:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/july_29_2014/test_flakes_graph.jpg)
+
+
+:bulb: **Concluding Remarks**
+
+
+:o: The following results are obtained calculating flake rate and failure rate in terms of test suite executions:
+
+
+* **NOTE:** Grouping is determined in terms of test_suite_id parameter
+
+| Total Distinct Test Suites (TDCR) | Total Passed Per Tests | Total Failed Tests | Total Flake Per Tests (TFT) | Total % of Flaky Tests = TFT/TDCR  |
+|-----------------------------------|:----------------------:|:------------------:|:---------------------------:|:----------------------------------:|
+|              5555                 |       15613            |         260        |             37              |               260/5555=0.0456      |
+
+
+* **Total Test Failures = Flake + Failed = 37 + 223 = 260**
+
+:bulb: As we can observe, **4.56%** test failures were caused by flaky tests. 
+<br>
+
+<hr>
+
+**Computation of P-->F, F-->P, F-->F, and P-->P Test Transitions**
+<hr>
+
+
+
+--------
+
+:o: **What are the average transitions of test suites in terms of failure and passing across ECT & ICT phase?**
+
+--------
+
+
+:small_red_triangle_down: **Python Implementation:** (ect_transition.py)
+
+~~~python
+import csv
+import logging
+import pdb
+
+from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import func
+from datetime import datetime
+from collections import defaultdict
+from sys import argv
+
+
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.NOTSET)
+
+Base = declarative_base()
+
+class Google(Base):
+  __tablename__ = 'google_dataset'
+  id = Column(Integer, primary_key = True)
+  test_suite_name = Column(String(2**11), nullable = False)
+  test_suite_mapped_id = Column(String(2**7), nullable = False)
+  change_request = Column(Integer, nullable = False)
+  stage = Column(String(2**7), index = True, nullable = False)
+  test_status = Column(String(2**7), index = True, nullable = False)
+  launch_time = Column(DateTime, nullable = False)
+  execution_time = Column(Integer, nullable = False)
+  test_size = Column(String(2**7), index = True, nullable = False)
+  shard_number = Column(Integer, nullable = False)
+  run_number = Column(Integer, nullable = False)
+  test_language = Column(String(2**7), index = True, nullable = False)
+
+  def __init__(self, test_suite_name, test_suite_mapped_id, change_request, stage, test_status, launch_time, execution_time, test_size, shard_number, run_number, test_language):
+    self.test_suite_name = test_suite_name
+    self.test_suite_mapped_id = test_suite_mapped_id
+    self.change_request = change_request
+    self.stage = stage
+    self.test_status = test_status
+    self.launch_time = launch_time
+    self.execution_time = execution_time
+    self.test_size = test_size
+    self.shard_number = shard_number
+    self.run_number = run_number
+    self.test_language = test_language
+
+  def __repr__(self):
+    return "<Google(mapped_id='%s', change_request='%d', shard_number='%d', status='%s', launch_time='%s', execution_time='%d', test_size='%s', test_language='%s')>" \
+    % (self.test_suite_mapped_id, self.change_request, self.shard_number, self.test_status, self.launch_time, self.execution_time, self.test_size, self.test_language)
+
+# engine = create_engine('mysql+pymysql://r*****@*****/******?passwd=*******')
+engine = create_engine('mysql+pymysql://*******/******?passwd=********&')
+Session = sessionmaker(bind=engine)
+session = Session()
+Base.metadata.create_all(engine)
+
+# date_object = datetime.strptime('31:00:00:02', '%m:%H:%M:%S')
+# print str(date_object)
+
+# myobject = Google('ts1', 1, 'post', 'failed', date_object, 1111, 'large', 222, 333, 'py')
+
+
+
+
+def import_csv(file):
+  mapped_id = defaultdict(lambda: "") 
+  idx = 1
+
+  with open(argv[1], 'rb') as csvfile:
+    data = csv.reader(csvfile, delimiter=',') 
+    for row in data:
+      try:      
+        test_suite_name = row[0]
+        if mapped_id[test_suite_name] == "":
+          mapped_id[test_suite_name] = "T" + str(idx)
+          idx+=1
+          test_suite_mapped_id = mapped_id[test_suite_name]
+        else:
+          test_suite_mapped_id = mapped_id[test_suite_name]
+        change_request = int(row[1])
+        stage = row[2].upper()
+        test_status = row[3].upper()    
+        launch_time = datetime.strptime(row[4], '%d:%H:%M:%S')
+        execution_time = int(row[5])
+        test_size = row[6].upper()
+        shard_number = int(row[7])
+        run_number = int(row[8])
+        test_language = row[9].upper()          
+
+        session.add(Google(test_suite_name, test_suite_mapped_id, change_request, stage, test_status, launch_time, execution_time, test_size, shard_number, run_number, test_language)) 
+        session.commit()      
+
+      except ValueError:      
+        print str(row)
+
+  csvfile.close()       
+
+
+# flaky_query = "SELECT * FROM google_dataset WHERE stage=\"POST\" GROUP BY test_suite_mapped_id, change_request, shard_number ORDER BY test_suite_mapped_id, change_request,shard_number ASC"
+# session.query(Google).from_statement(flaky_query).all()
+
+# .group_by(Google.test_suite_mapped_id, Google.change_request, Google.shard_number) \
+
+def v1():
+  data = session.query(Google).filter(Google.stage == "POST") \
+  .order_by(Google.test_suite_mapped_id.asc()) \
+  .all()
+
+  prev = data[0]
+
+  f_to_p = 0
+  f_to_f = 0
+  p_to_f = 0
+  p_to_p = 0
+
+  trans_change_dict = defaultdict(lambda: ())
+  for curr in data[1:]:
+    if curr.test_suite_mapped_id == prev.test_suite_mapped_id:    
+      if curr.test_status != prev.test_status:
+        if prev.test_status == "FAILED":      
+          f_to_p += 1             
+        else:
+          p_to_f += 1
+      else:
+        if prev.test_status == "FAILED":
+          f_to_f += 1
+        else:
+          p_to_p += 1 
+    else:
+      trans_change_dict[curr.test_suite_mapped_id] = (f_to_p, f_to_f, p_to_f, p_to_p)
+      f_to_p = 0
+      f_to_f = 0
+      p_to_f = 0
+      p_to_p = 0
+
+      prev = curr
+
+  print "Test Suite\tF->P\tF->F\tP->F\tP->P"
+  for key in trans_change_dict.keys():
+    entry = trans_change_dict[key]  
+    total = float(entry[0] + entry[1] + entry[2] + entry[3]) / 100
+    if total != 0:
+      print "%s\t%f\t%f\t%f\t%f\t" % (key, entry[0] / total, entry[1] / total, entry[2] / total, entry[3] / total)
+    else:
+      print "%s\t%f\t%f\t%f\t%f\t" % (key, 0.0, 0.0, 0.0, 0.0)
+
+def v2():
+  data = session.query(Google).filter(Google.stage == "POST") \
+  .order_by(Google.test_suite_mapped_id.asc()) \
+  .all()
+
+  for curr in data[1:]:
+    if curr.test_suite_mapped_id == prev.test_suite_mapped_id \
+    and curr.change_request == prev.change_request:
+      pass
+
+
+def v3():
+  sql = "SELECT * FROM (  SELECT id,         test_suite_name,         test_suite_mapped_id,         change_request,         stage,         test_status,         launch_time,         execution_time,         test_size,         shard_number,         run_number,         test_language FROM      (      SELECT id,              test_suite_name,             test_suite_mapped_id,             change_request,             stage,             (CASE WHEN test_status = 'PASSED' THEN 'FAILED' WHEN test_status = 'FAILED' THEN 'FAILED' ELSE 'FAILED' END) AS test_status,             launch_time,              execution_time,              test_size,              shard_number,              run_number,              test_language,       GROUP_CONCAT(TEST_STATUS SEPARATOR ' ') AS test_status2      FROM google_dataset      WHERE stage = \"POST\"     GROUP BY test_suite_mapped_id,change_request ) AS T  WHERE test_status2 REGEXP '(PASSED) (FAILED)' UNION ALL  SELECT id,         test_suite_name,         test_suite_mapped_id,         change_request,         stage,         test_status,         launch_time,         execution_time,         test_size,         shard_number,         run_number,         test_language  FROM (          SELECT d.*,               GROUP_CONCAT(test_status SEPARATOR ' ') AS test_status2      FROM google_dataset d      WHERE stage = \"POST\"        GROUP BY test_suite_mapped_id,change_request     ) AS T  WHERE test_status2 NOT LIKE '%FAILED%' UNION ALL  SELECT id,         test_suite_name,         test_suite_mapped_id,         change_request,         stage,         test_status,         launch_time,         execution_time,         test_size,         shard_number,         run_number,         test_language   FROM (           SELECT d.* ,GROUP_CONCAT(test_status SEPARATOR ' ') AS test_status2        FROM google_dataset d      WHERE stage = \"POST\"       GROUP BY test_suite_mapped_id,change_request ) AS T  WHERE test_status2 NOT LIKE '%PASSED%' ) AS KK GROUP BY test_suite_mapped_id,change_request ORDER BY test_suite_mapped_id,change_request;"
+  # sql = "SELECT id, test_suite_name, test_suite_mapped_id, change_request, stage, test_status, launch_time, execution_time, test_size, shard_number, run_number, test_language FROM (SELECT d.*, GROUP_CONCAT(TEST_STATUS SEPARATOR \' \') AS test_status2 FROM GOOGLE_DATASET d WHERE stage = \"POST\" GROUP BY TEST_SUITE_MAPPED_ID, CHANGE_REQUEST) AS T WHERE test_status2 REGEXP \'(PASSED) (FAILED)\';"
+  result = session.query(Google).from_statement(sql).all()    
+
+  prev = result[0]
+
+  f_to_p = 0
+  f_to_f = 0
+  p_to_f = 0
+  p_to_p = 0
+
+  trans_change_dict = defaultdict(lambda: ())
+  for curr in result[1:]:
+    if curr.test_suite_mapped_id == prev.test_suite_mapped_id:    
+      if curr.test_status != prev.test_status:
+        if prev.test_status == "FAILED":      
+          f_to_p += 1             
+        else:
+          p_to_f += 1
+      else:
+        if prev.test_status == "FAILED":
+          f_to_f += 1
+        else:
+          p_to_p += 1 
+    else:
+      trans_change_dict[curr.test_suite_mapped_id] = (f_to_p, f_to_f, p_to_f, p_to_p)
+      f_to_p = 0
+      f_to_f = 0
+      p_to_f = 0
+      p_to_p = 0
+
+      prev = curr
+
+  print "Test Suite\tF->P\tF->F\tP->F\tP->P"
+  for key in trans_change_dict.keys():
+    entry = trans_change_dict[key]  
+    total = float(entry[0] + entry[1] + entry[2] + entry[3]) / 100
+    if total != 0:
+      print "%s\t%f\t%f\t%f\t%f\t" % (key, entry[0] / total, entry[1] / total, entry[2] / total, entry[3] / total)
+    else:
+      print "%s\t%f\t%f\t%f\t%f\t" % (key, 0.0, 0.0, 0.0, 0.0)
+
+
+
+v3()
+~~~
+
+**SQL Implementation that retrieves ECT passing and failure results for each test suite. Same applies for ICT transitions.**
+
+:small_red_triangle_down: **Results:**
+
+~~~MySQL
+SELECT *
+FROM
+( 
+SELECT id,
+        test_suite_name,
+        test_suite_mapped_id,
+        change_request,
+        stage,
+        test_status,
+        launch_time,
+        execution_time,
+        test_size,
+        shard_number,
+        run_number,
+        test_language
+FROM 
+    (
+     SELECT id, 
+            test_suite_name,
+            test_suite_mapped_id,
+            change_request,
+            stage,
+            (CASE WHEN test_status = 'PASSED' THEN 'FAILED' WHEN test_status = 'FAILED' THEN 'FAILED' ELSE 'FAILED' END) AS test_status,
+            launch_time, 
+            execution_time, 
+            test_size, 
+            shard_number, 
+            run_number, 
+            test_language,
+            GROUP_CONCAT(TEST_STATUS SEPARATOR ' ') AS test_status2 
+       FROM google_dataset 
+      WHERE stage = "PRES" 
+   GROUP BY test_suite_mapped_id,change_request
+) AS T 
+WHERE test_status2 REGEXP '(PASSED) (FAILED)'
+UNION ALL
+ SELECT id,
+        test_suite_name,
+        test_suite_mapped_id,
+        change_request,
+        stage,
+        test_status,
+        launch_time,
+        execution_time,
+        test_size,
+        shard_number,
+        run_number,
+        test_language 
+FROM (  
+       SELECT d.*,
+              GROUP_CONCAT(test_status SEPARATOR ' ') AS test_status2 
+         FROM google_dataset d
+        WHERE stage = "PRES" 
+        GROUP BY test_suite_mapped_id,change_request
+    ) AS T 
+WHERE test_status2 NOT LIKE '%FAILED%'
+UNION ALL
+ SELECT id,
+        test_suite_name,
+        test_suite_mapped_id,
+        change_request,
+        stage,
+        test_status,
+        launch_time,
+        execution_time,
+        test_size,
+        shard_number,
+        run_number,
+        test_language 
+ FROM ( 
+         SELECT d.* ,GROUP_CONCAT(test_status SEPARATOR ' ') AS test_status2 
+           FROM google_dataset d
+          WHERE stage = "PRES" 
+       GROUP BY test_suite_mapped_id,change_request
+) AS T 
+WHERE test_status2 NOT LIKE '%PASSED%'
+) AS KK
+GROUP BY test_suite_mapped_id,change_request
+ORDER BY test_suite_mapped_id,change_request;
+~~~
+<hr>
+
+:small_red_triangle_down: Python Results for **ECT - (POST)** Transitons:
+
+
+|   AVG Percent  |    F-->P     |    F-->F     |     P-->F     |     P-->P      |
+|:--------------:|:------------:|:------------:|:-------------:|:--------------:|
+|     **(%)**    |  0.069290131 |  0.0571778   |   0.072501064 |   99.801031    |
+ 
+
+
+
+:small_red_triangle_down: Python Results for **ICT - (PRE)** Transitons:
+
+
+|   AVG Percent  |    F-->P     |     F-->F    |     P-->F     |     P-->P      |
+|:--------------:|:------------:|:------------:|:-------------:|:--------------:|
+|     **(%)**    |  0.093662583 |  0.068411971 |  0.051628306  |   99.46214803  |
+
+<br>
+
+
+**Computation of tests grouped by languages**
+
+
+--------
+
+:o: **What is total of number of failures by test suites determined by a language?**
+
+--------
+
+:small_red_triangle_down: **MySql Implementation:** (group_by_lang.sql)
+
+~~~MySQL
+SELECT  test_language,
+        stage, 
+        failed, 
+        flake,
+        passed,
+        AVG((((execution_time % (1000 * 60 * 60)) % (1000 * 60)) / 1000)) AS avg_execution_time_in_sec,     
+        (SUM(failed + flake)*1) AS total_failed,
+        TRUNCATE((failed * 100)/(failed + passed),2) AS failure_rate,
+        TRUNCATE((flake * 100)/(flake + failed + passed),2) AS flake_rate
+ FROM
+(
+SELECT  test_suite_mapped_id,
+        COUNT(change_request) AS change_request,
+        COUNT(shard_number) AS shard_number,
+        test_language,
+        stage,
+        execution_time,
+        SUM(IF(test_status = "FAILED", 1, 0)) AS failed, 
+        SUM(IF(test_status = "FLAKE", 1, 0)) AS flake,
+        SUM(IF(test_status = "PASSED", 1, 0)) AS passed
+    FROM
+      (
+        SELECT test_suite_mapped_id,
+               change_request,
+               shard_number, 
+               test_language,
+               IF((passed > 0 AND failed > 0), "FLAKE", "NONE") AS test_status,
+               stage, 
+               execution_time,
+               failed,
+               passed
+
+        FROM
+        (
+         //computation of flaky tests
+         SELECT test_suite_mapped_id, 
+                   COUNT(change_request) AS change_request, 
+                   COUNT(shard_number) AS shard_number, 
+                   test_language,
+                   test_status,
+                   stage,
+                   SUM(execution_time) AS execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+                   FROM google_dataset
+                   WHERE stage = "POST"
+                   GROUP BY test_suite_mapped_id, change_request
+            ) AS T
+                WHERE passed > 0 AND failed > 0
+               GROUP BY test_suite_mapped_id, change_request
+        Union ALL
+         //computation of failing tests
+          SELECT test_suite_mapped_id,
+               change_request,
+               shard_number, 
+               test_language,
+               IF((failed > 0 and passed = 0),"FAILED","NONE") AS test_status,
+               stage, 
+               execution_time,
+               failed,
+               passed    
+         FROM
+          (
+            SELECT test_suite_mapped_id, 
+                   change_request, 
+                   shard_number, 
+                   test_language,
+                   test_status,
+                   stage,
+                   execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+                   FROM google_dataset
+                   WHERE stage = "POST"
+                 GROUP BY test_suite_mapped_id, change_request
+            ) AS R
+                WHERE passed = 0 AND failed > 0
+               GROUP BY test_suite_mapped_id, change_request
+       UNION ALL
+         //computation of passing tests
+          SELECT test_suite_mapped_id,
+                change_request,
+                shard_number, 
+                test_language,
+                IF((failed = 0 and passed > 0),"PASSED","NONE") AS test_status,
+                stage, 
+                execution_time,
+                failed,
+                passed    
+          FROM
+          (
+            SELECT test_suite_mapped_id, 
+                   change_request, 
+                   shard_number, 
+                   test_language,
+                   test_status,
+                   stage,
+                   execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+                   FROM google_dataset
+                   WHERE stage = "POST"
+                 GROUP BY test_suite_mapped_id, change_request
+             ) AS P
+                WHERE passed > 0 AND failed = 0
+               GROUP BY test_suite_mapped_id, change_request
+       ) AS MM
+GROUP BY test_language
+) AS RRR
+GROUP BY test_language
+~~~
+
+:small_red_triangle_down: **Results:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/july_29_2014/group_by_lang_results.jpg)
+
+
+:small_red_triangle_down: **Graph Representation:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/july_29_2014/group_by_lang_graph.jpg)
+<br>
+
+
+
+**Computation of tests grouped by languages and their size**
+
+
+--------
+
+:o: **What is total of number of failures by test suites determined by a language and test size?**
+
+--------
+
+:small_red_triangle_down: **MySql Implementation:** (group_by_lang_size.sql)
+
+~~~MySQL
+SELECT  test_language,
+        test_size,
+        stage, 
+        failed, 
+        flake,
+        passed,
+        AVG((((execution_time % (1000 * 60 * 60)) % (1000 * 60)) / 1000)) AS avg_execution_time_in_sec,     
+        (SUM(failed + flake)*1) AS total_failed,
+        TRUNCATE((failed * 100)/(failed + passed),2) AS failure_rate,
+        TRUNCATE((flake * 100)/(flake + failed + passed),2) AS flake_rate
+ FROM
+(
+SELECT  test_suite_mapped_id,
+        COUNT(change_request) AS change_request,
+        COUNT(shard_number) AS shard_number,
+        test_language,
+        test_size,
+        stage,
+        execution_time,
+        SUM(IF(test_status = "FAILED", 1, 0)) AS failed, 
+        SUM(IF(test_status = "FLAKE", 1, 0)) AS flake,
+        SUM(IF(test_status = "PASSED", 1, 0)) AS passed
+    FROM
+      (
+        SELECT test_suite_mapped_id,
+               change_request,
+               shard_number, 
+               test_language,
+               test_size,
+               IF((passed > 0 AND failed > 0), "FLAKE", "NONE") AS test_status,
+               stage, 
+               execution_time,
+               failed,
+               passed
+
+        FROM
+        (
+         //computation of flaky tests
+         SELECT test_suite_mapped_id, 
+                   COUNT(change_request) AS change_request, 
+                   COUNT(shard_number) AS shard_number, 
+                   test_language,
+                   test_size,
+                   test_status,
+                   stage,
+                   SUM(execution_time) AS execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+                   FROM google_dataset
+                   WHERE stage = "POST"
+                   GROUP BY test_suite_mapped_id, change_request
+            ) AS T
+                WHERE passed > 0 AND failed > 0
+               GROUP BY test_suite_mapped_id, change_request
+        Union ALL
+         //computation of failing tests
+          SELECT test_suite_mapped_id,
+               change_request,
+               shard_number, 
+               test_language,
+               test_size,
+               IF((failed > 0 and passed = 0),"FAILED","NONE") AS test_status,
+               stage, 
+               execution_time,
+               failed,
+               passed    
+         FROM
+          (
+            SELECT test_suite_mapped_id, 
+                   change_request, 
+                   shard_number, 
+                   test_language,
+                   test_size,
+                   test_status,
+                   stage,
+                   execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+                   FROM google_dataset
+                   WHERE stage = "POST"
+                 GROUP BY test_suite_mapped_id, change_request
+            ) AS R
+                WHERE passed = 0 AND failed > 0
+               GROUP BY test_suite_mapped_id, change_request
+       UNION ALL
+         //computation of passing tests
+          SELECT test_suite_mapped_id,
+                change_request,
+                shard_number, 
+                test_language,
+                test_size,
+                IF((failed = 0 and passed > 0),"PASSED","NONE") AS test_status,
+                stage, 
+                execution_time,
+                failed,
+                passed    
+          FROM
+          (
+            SELECT test_suite_mapped_id, 
+                   change_request, 
+                   shard_number, 
+                   test_language,
+                   test_size,
+                   test_status,
+                   stage,
+                   execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+                   FROM google_dataset
+                   WHERE stage = "POST"
+                 GROUP BY test_suite_mapped_id, change_request
+             ) AS P
+                WHERE passed > 0 AND failed = 0
+               GROUP BY test_suite_mapped_id, change_request
+       ) AS MM
+GROUP BY test_language, test_size
+) AS RRR
+GROUP BY test_language,test_size
+~~~
+
+:small_red_triangle_down: **Results:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/july_29_2014/group_by_lang_size_results.jpg)
+
+
+:small_red_triangle_down: **Graph Representation:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/july_29_2014/group_by_lang_size_graph.jpg)
+
+<br>
+
+
+**Number of failing change requests**
+
+
+--------
+
+:o: **What is the number of total change requests distributed across day?**
+
+--------
+
+:small_red_triangle_down: **MySql Implementation:** (total_num_change_requests_per_day.sql)
+
+~~~MySQL
+SELECT change_request,
+       Day(launch_time) As day
+ FROM
+(
+SELECT 
+        change_request, 
+        shard_number, 
+        stage,
+        launch_time,
+        execution_time, 
+        SUM(IF(test_status = "FAILED", 1, 0)) AS failed, 
+        SUM(IF(test_status = "FLAKE", 1, 0)) AS flake,
+        SUM(IF(test_status = "PASSED", 1, 0)) AS passed
+    FROM
+      (
+        SELECT  
+                change_request,  
+                shard_number, 
+                stage,
+                launch_time,
+                execution_time, 
+                IF((passed > 0 AND failed > 0), "FLAKE", "NONE") AS test_status,
+                failed,
+                passed
+
+        FROM
+        (
+         //computation of flaky tests
+         SELECT    
+                   count(change_request) as change_request, 
+                   shard_number, 
+                   stage,
+                   launch_time,
+                   execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+              FROM google_dataset
+             WHERE stage = "POST"
+          GROUP BY change_request
+            ) AS T
+                WHERE passed > 0 AND failed > 0
+               GROUP BY change_request
+        Union ALL
+         //computation of failing tests
+          SELECT 
+                change_request, 
+                shard_number,
+                stage,
+                launch_time,
+                execution_time,
+                IF((passed = 0 AND failed > 0), "FAILED", "NONE") AS test_status,
+                failed,
+                passed
+         FROM
+          (
+            SELECT 
+                   count(change_request) as change_request, 
+                   shard_number, 
+                   stage,
+                   launch_time,
+                   execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+              FROM google_dataset
+            WHERE stage = "POST"
+         GROUP BY change_request
+            ) AS R
+                WHERE passed = 0 AND failed > 0
+               GROUP BY change_request
+       UNION ALL
+         //computation of passing tests
+          SELECT 
+                change_request,
+                shard_number,
+                stage,
+                launch_time,
+                execution_time,
+                IF((passed > 0 AND failed = 0), "PASSED", "NONE") AS test_status,
+                failed,
+                passed
+          FROM
+          (
+            SELECT 
+                   count(change_request) AS change_request,  
+                   shard_number, 
+                   stage,
+                   launch_time,
+                   execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+             FROM google_dataset
+            WHERE stage = "POST"
+        GROUP BY change_request
+             ) AS P
+                WHERE passed > 0 AND failed = 0
+               GROUP BY change_request
+       ) AS MM
+GROUP BY Day(launch_time)
+) AS RRR
+GROUP BY Day(launch_time);
+~~~
+
+:small_red_triangle_down: **Results:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/july_29_2014/total_num_change_requests_per_day.jpg)
+
+
+:small_red_triangle_down: **Graph Representation:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/july_29_2014/total_num_change_requests_per_day_graph.jpg)
+
+
+
+**Number of failing test suite executions**
+
+
+--------
+
+:o: **What is the number of total test suite executions distributed across day?**
+
+--------
+
+:small_red_triangle_down: **MySql Implementation:** (total_test_executions_per_day.sql)
+
+~~~MySQL
+SELECT test_suite_mapped_id,
+       Day(launch_time) As day
+ FROM
+(
+SELECT 
+        test_suite_mapped_id, 
+        shard_number, 
+        stage,
+        launch_time,
+        execution_time, 
+        SUM(IF(test_status = "FAILED", 1, 0)) AS failed, 
+        SUM(IF(test_status = "FLAKE", 1, 0)) AS flake,
+        SUM(IF(test_status = "PASSED", 1, 0)) AS passed
+    FROM
+      (
+        SELECT  
+                test_suite_mapped_id,  
+                shard_number, 
+                stage,
+                launch_time,
+                execution_time, 
+                IF((passed > 0 AND failed > 0), "FLAKE", "NONE") AS test_status,
+                failed,
+                passed
+
+        FROM
+        (
+         //computation of flaky tests
+         SELECT    
+                   count(test_suite_mapped_id) as test_suite_mapped_id, 
+                   shard_number, 
+                   stage,
+                   launch_time,
+                   execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+                   FROM google_dataset
+                   WHERE stage = "POST"
+                   GROUP BY test_suite_mapped_id
+            ) AS T
+                WHERE passed > 0 AND failed > 0
+               GROUP BY test_suite_mapped_id
+        Union ALL
+         //computation of failing tests
+          SELECT 
+                test_suite_mapped_id, 
+                shard_number,
+                stage,
+                launch_time,
+                execution_time,
+                IF((passed = 0 AND failed > 0), "FAILED", "NONE") AS test_status,
+                failed,
+                passed
+         FROM
+          (
+            SELECT 
+                   count(test_suite_mapped_id) as test_suite_mapped_id, 
+                   shard_number, 
+                   stage,
+                   launch_time,
+                   execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+                   FROM google_dataset
+                   WHERE stage = "POST"
+                 GROUP BY test_suite_mapped_id
+            ) AS R
+                WHERE passed = 0 AND failed > 0
+               GROUP BY test_suite_mapped_id
+       UNION ALL
+         //computation of passing tests
+          SELECT 
+                test_suite_mapped_id,
+                shard_number,
+                stage,
+                launch_time,
+                execution_time,
+                IF((passed > 0 AND failed = 0), "PASSED", "NONE") AS test_status,
+                failed,
+                passed
+          FROM
+          (
+            SELECT 
+                   count(test_suite_mapped_id) as test_suite_mapped_id,  
+                   shard_number, 
+                   stage,
+                   launch_time,
+                   execution_time, 
+                   SUM(IF(test_status = 'FAILED', 1, 0)) AS failed, 
+                   SUM(IF(test_status = 'PASSED', 1, 0)) AS passed
+                   FROM google_dataset
+                   WHERE stage = "POST"
+                 GROUP BY test_suite_mapped_id
+             ) AS P
+                WHERE passed > 0 AND failed = 0
+               GROUP BY test_suite_mapped_id
+       ) AS MM
+GROUP BY Day(launch_time)
+) AS RRR
+GROUP BY Day(launch_time);
+~~~
+
+:small_red_triangle_down: **Results:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/july_29_2014/total_test_executions_per_day_results.jpg)
+
+
+:small_red_triangle_down: **Graph Representation:**
+
+![Alt text](http://rrezarta-krasniqi.github.io/july_29_2014/total_test_executions_per_day_graph.jpg)
+
+
+<hr>
+:copyright: Rrezarta Krasniqi - University of Nebraska - Lincoln

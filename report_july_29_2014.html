@@ -749,7 +749,7 @@ body .task-list{
 .type-csharp .highlight .sc{
   color:#A31515
 }
-</style><title>report_july_29_2014</title></head><body><p><a href="https://camo.githubusercontent.com/03dcf107c4f2bdd8f802b52a8178cd89f2090370/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f65737175617265642e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/03dcf107c4f2bdd8f802b52a8178cd89f2090370/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f65737175617265642e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/esquared.jpg" style="max-width:100%;"></a></p>
+</style><title>report_jully_29_2014</title></head><body><p><a href="https://camo.githubusercontent.com/03dcf107c4f2bdd8f802b52a8178cd89f2090370/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f65737175617265642e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/03dcf107c4f2bdd8f802b52a8178cd89f2090370/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f65737175617265642e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/esquared.jpg" style="max-width:100%;"></a></p>
 
 <hr><h5>
 <a name="user-content-date-july-29-2014" class="anchor" href="#date-july-29-2014" aria-hidden="true"><span class="octicon octicon-link"></span></a><img class="emoji" title=":date:" alt=":date:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f4c5.png" height="20" width="20" align="absmiddle"> July 29, 2014</h5>
@@ -757,93 +757,335 @@ body .task-list{
 <h1>
 <a name="user-content-the-google-dataset-of-testing-results" class="anchor" href="#the-google-dataset-of-testing-results" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Google Dataset of Testing Results</h1>
 
-<hr><p>Flow of Google Data Grouped By <strong>Change Requests Per Day</strong> (change_request_day.sql)</p>
+<h2>
+<a name="user-content-data-download-and-preprocessing" class="anchor" href="#data-download-and-preprocessing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data Download and Preprocessing</h2>
+
+<div class="highlight highlight-bash"><pre>git clone https://code.google.com/p/google-shared-dataset-of-test-suite-results/
+<span class="nb">cd </span>google-shared-dataset-of-test-suite-results/posted
+gunzip testShareData.csv.rev.gz
+sed -i <span class="s1">''</span> <span class="s1">'s/^,//g'</span> testShareData.csv.rev <span class="c"># replace the "," with "" if it is in the beginning of the line</span>
+sed -i <span class="s1">''</span> <span class="s1">'$ d'</span> testShareData.csv.rev <span class="c"># removes the last line which is empty</span>
+</pre></div>
+
+<h2>
+<a name="user-content-mysql-database-schema-and-import-csv-file" class="anchor" href="#mysql-database-schema-and-import-csv-file" aria-hidden="true"><span class="octicon octicon-link"></span></a>MySQL Database Schema and Import CSV File</h2>
+
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Query Implementation:</strong></p>
+
+<div class="highlight highlight-mysql"><pre><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="ss">`google_dataset`</span> <span class="p">(</span>
+  <span class="ss">`id`</span> <span class="kt">bigint</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="k">NOT</span> <span class="no">NULL</span> <span class="kp">AUTO_INCREMENT</span><span class="p">,</span>
+  <span class="ss">`test_suite_mapped_id`</span> <span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`test_suite`</span> <span class="kt">longtext</span><span class="p">,</span>
+  <span class="ss">`change_request`</span> <span class="kt">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`stage`</span> <span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`test_status`</span> <span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`launch_time`</span> <span class="kt">datetime</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`execution_time`</span> <span class="kt">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`test_size`</span> <span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`shard_number`</span> <span class="kt">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`run_number`</span> <span class="kt">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="ss">`test_language`</span> <span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="no">NULL</span><span class="p">,</span>
+  <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="ss">`id`</span><span class="p">),</span>
+  <span class="k">KEY</span> <span class="ss">`change_request_idx`</span> <span class="p">(</span><span class="ss">`change_request`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">,</span>
+  <span class="k">KEY</span> <span class="ss">`shard_number_idx`</span> <span class="p">(</span><span class="ss">`shard_number`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">,</span>
+  <span class="k">KEY</span> <span class="ss">`stage_idx`</span> <span class="p">(</span><span class="ss">`stage`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">,</span>
+  <span class="k">KEY</span> <span class="ss">`test_status_idx`</span> <span class="p">(</span><span class="ss">`test_status`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">,</span>
+  <span class="k">KEY</span> <span class="ss">`test_language_idx`</span> <span class="p">(</span><span class="ss">`test_language`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">,</span>
+  <span class="k">KEY</span> <span class="ss">`test_size_idx`</span> <span class="p">(</span><span class="ss">`test_size`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">,</span>
+  <span class="k">KEY</span> <span class="ss">`test_suite_mapped_id_idx`</span> <span class="p">(</span><span class="ss">`test_suite_mapped_id`</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span>
+<span class="p">)</span> <span class="kp">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span> <span class="kp">AUTO_INCREMENT</span><span class="o">=</span><span class="mi">3468949</span> <span class="k">DEFAULT</span> <span class="kp">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span>
+
+<span class="k">LOAD</span> <span class="n">DATA</span> <span class="k">INFILE</span> <span class="s1">'/path/to/testShareData.csv.rev'</span> <span class="k">INTO</span> <span class="k">TABLE</span> <span class="n">google_dataset</span> <span class="err">\</span>
+<span class="n">FIELDS</span> <span class="k">TERMINATED</span> <span class="k">BY</span> <span class="s1">','</span> <span class="k">LINES</span> <span class="k">TERMINATED</span> <span class="k">BY</span> <span class="s1">'\n'</span> <span class="err">\</span>
+<span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">change_request</span><span class="p">,</span> <span class="n">execution_time</span><span class="p">,</span> <span class="n">launch_time</span><span class="p">,</span> <span class="n">run_number</span><span class="p">,</span> <span class="n">shard_number</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">test_language</span><span class="p">,</span> <span class="n">test_size</span><span class="p">,</span> <span class="n">test_status</span><span class="p">,</span> <span class="n">test_suite</span><span class="p">,</span> <span class="n">test_suite_mapped_id</span><span class="p">);</span>
+
+<span class="c1">-- Query OK, 3468948 rows affected (1 min 34.64 sec)</span>
+<span class="c1">-- Records: 3468948  Deleted: 0  Skipped: 0  Warnings: 0</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">test_suite_mapped_id_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">test_suite_mapped_id</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">change_request_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">shard_number_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">shard_number</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">stage_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">stage</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">test_size_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">test_size</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">test_status_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">test_status</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">test_language_idx</span> <span class="k">ON</span> <span class="nf">google_dataset</span> <span class="p">(</span><span class="n">test_language</span><span class="p">)</span> <span class="k">USING</span> <span class="n">BTREE</span><span class="p">;</span>
+</pre></div>
+
+<h2>
+<a name="user-content-dataset-analysis" class="anchor" href="#dataset-analysis" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dataset Analysis</h2>
+
+<p><img class="emoji" title=":o:" alt=":o:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2b55-fe0f.png" height="20" width="20" align="absmiddle"><strong>How many distinct test suite executions exist from the Google Dataset?</strong></p>
+
+<hr><ul>
+<li>Total Distinct Test_Suites are: <strong>5555</strong>
+</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Query Implementation:</strong></p>
+
+<div class="highlight highlight-MySQL"><pre>        <span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="n">test_suite_mapped_id</span><span class="p">)</span> <span class="k">AS</span> <span class="n">distinct_test_suits</span> 
+        <span class="k">FROM</span> <span class="n">google_dataset</span><span class="p">;</span>
+</pre></div>
+
+<p><br></p>
+
+<hr><p><img class="emoji" title=":o:" alt=":o:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2b55-fe0f.png" height="20" width="20" align="absmiddle"><strong>What is the total size of Google Dataset?</strong></p>
+
+<hr><ul>
+<li>There are also <strong>3468948</strong> records in the entire dataset</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Query Implementation:</strong></p>
+
+<div class="highlight highlight-MySQL"><pre>
+        <span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="n">total_records</span> <span class="k">FROM</span> <span class="n">google_dataset</span><span class="p">;</span>
+</pre></div>
+
+<p><br></p>
+
+<hr><p><img class="emoji" title=":o:" alt=":o:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2b55-fe0f.png" height="20" width="20" align="absmiddle"><strong>How Google Dataset is structured in terms of tests suite executions?</strong></p>
+
+<hr><ul>
+<li>There are total of <strong>169</strong> different TEST_SUITES with partitioned executions</li>
+</ul><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>MySQL Implementation:</strong></p>
+
+<div class="highlight highlight-MySQL"><pre>
+        <span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="n">test_suite</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_suites</span>
+        <span class="k">FROM</span>   <span class="n">google_dataset</span>
+        <span class="k">WHERE</span>  <span class="n">shard_number</span> <span class="k">IN</span> <span class="p">(</span><span class="k">SELECT</span> <span class="n">shard_number</span>
+                                <span class="k">FROM</span>   <span class="n">google_dataset</span>
+                                <span class="k">WHERE</span>  <span class="n">shard_number</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">);</span>
+</pre></div>
+
+<p><br></p>
+
+<hr><p><img class="emoji" title=":o:" alt=":o:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2b55-fe0f.png" height="20" width="20" align="absmiddle"><strong>How many distinct change requests per test suite exist in both ECT (POST) and ICT (PRE) phase?</strong></p>
 
 <hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>MySQL Implementation:</strong></p>
 
-<div class="highlight highlight-MySQL"><pre>
-<span class="c1">#failing total change requests</span>
-<span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="n">change_request</span><span class="p">),</span> <span class="nf">DAY</span><span class="p">(</span><span class="n">launch_time</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">google_dataset</span>
-<span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
-<span class="k">AND</span> <span class="n">test_status</span> <span class="o">=</span> <span class="s2">"FAILED"</span>
-<span class="k">GROUP</span> <span class="k">BY</span> <span class="nf">DAY</span><span class="p">(</span><span class="n">launch_time</span><span class="p">);</span>
-
-
-<span class="c1">#passing and failing total change requests</span>
-<span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="n">change_request</span><span class="p">),</span> <span class="nf">DAY</span><span class="p">(</span><span class="n">launch_time</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">google_dataset</span>
-<span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
-<span class="k">GROUP</span> <span class="k">BY</span> <span class="nf">DAY</span><span class="p">(</span><span class="n">launch_time</span><span class="p">);</span>
-
+<div class="highlight highlight-MySQL"><pre><span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="k">AS</span> <span class="n">total_change_requests</span><span class="p">,</span> <span class="n">stage</span>
+ <span class="k">FROM</span> <span class="p">(</span>
+           <span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">change_request_count</span><span class="p">,</span> <span class="k">IF</span><span class="p">(</span><span class="n">stage</span><span class="o">=</span><span class="s2">"POST"</span><span class="p">,</span> <span class="s2">"ECT phase"</span><span class="p">,</span><span class="n">stage</span><span class="p">)</span> <span class="k">AS</span> <span class="n">stage</span>
+             <span class="k">FROM</span> <span class="n">google_dataset</span> 
+            <span class="k">WHERE</span> <span class="mi">1</span> <span class="o">=</span> <span class="mi">1</span>
+              <span class="k">AND</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+         <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">change_request</span>
+     <span class="p">)</span> <span class="k">AS</span> <span class="n">T</span>
+<span class="k">UNION</span> <span class="k">ALL</span>
+<span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="k">AS</span> <span class="n">total_change_requests</span><span class="p">,</span> <span class="n">stage</span>
+  <span class="k">FROM</span> <span class="p">(</span>  
+          <span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">change_request_count</span><span class="p">,</span> <span class="k">IF</span><span class="p">(</span><span class="n">stage</span><span class="o">=</span><span class="s2">"PRES"</span><span class="p">,</span> <span class="s2">"ICT phase"</span><span class="p">,</span><span class="n">stage</span><span class="p">)</span> <span class="k">AS</span> <span class="n">stage</span>
+            <span class="k">FROM</span> <span class="n">google_dataset</span> 
+           <span class="k">WHERE</span> <span class="mi">1</span> <span class="o">=</span> <span class="mi">1</span>
+             <span class="k">AND</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"PRES"</span>
+        <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">change_request</span>
+     <span class="p">)</span> <span class="k">AS</span> <span class="n">T</span>
 </pre></div>
 
-<ul>
-<li>
-<p>Graph: Categorization By <strong>Change Request By Day</strong> (number_of_change_request_by_day_failed.xsls)</p>
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Results:</strong></p>
 
-<ul>
-<li>Total failing change requests by day</li>
-</ul>
-</li>
-</ul><p><a href="https://camo.githubusercontent.com/7d80406ce0ed3f802bfeef62c8c523e5a7b53c88/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6e756d6265725f6f665f6368616e67655f726571756573745f62795f6461795f6661696c65642e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/7d80406ce0ed3f802bfeef62c8c523e5a7b53c88/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6e756d6265725f6f665f6368616e67655f726571756573745f62795f6461795f6661696c65642e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/number_of_change_request_by_day_failed.jpg" style="max-width:100%;"></a></p>
+<table>
+<thead><tr>
+<th>total_change_requests</th>
+<th align="center">stage</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>4520</td>
+<td align="center">ECT phase</td>
+</tr>
+<tr>
+<td>1693</td>
+<td align="center">ICT phase</td>
+</tr>
+</tbody>
+</table><p><br></p>
 
-<p><br></p>
-
-<ul>
-<li>
-<p>Graph: Categorization By <strong>Change Request By Day</strong> (number_of_change_request_by_day_passed_failed.xsls)</p>
-
-<ul>
-<li>Total passing and failing change requests by day</li>
-</ul>
-</li>
-</ul><p><a href="https://camo.githubusercontent.com/7f0bca5d789b7c55f5450d4a2ea4ea8496fd1be8/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6e756d6265725f6f665f6368616e67655f726571756573745f62795f6461795f7061737365645f6661696c65642e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/7f0bca5d789b7c55f5450d4a2ea4ea8496fd1be8/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6e756d6265725f6f665f6368616e67655f726571756573745f62795f6461795f7061737365645f6661696c65642e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/number_of_change_request_by_day_passed_failed.jpg" style="max-width:100%;"></a></p>
-
-<p><br></p>
-
-<hr><p>Flow of Google Data Grouped By <strong>Total Test Execution Per Day</strong> (total_test_executions_per_day.sql)</p>
+<hr><p><img class="emoji" title=":o:" alt=":o:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2b55-fe0f.png" height="20" width="20" align="absmiddle"><strong>What is the total of test suite executions across ECT &amp; ICT phase?</strong></p>
 
 <hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>MySQL Implementation:</strong></p>
 
-<div class="highlight highlight-MySQL"><pre>
-<span class="c1">#failing total test suite executions</span>
-<span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="n">test_suite_mapped_id</span><span class="p">),</span> <span class="nf">DAY</span><span class="p">(</span><span class="n">launch_time</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">google_dataset</span>
-<span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
-<span class="k">AND</span> <span class="n">test_status</span> <span class="o">=</span> <span class="s2">"FAILED"</span>
-<span class="k">GROUP</span> <span class="k">BY</span> <span class="nf">DAY</span><span class="p">(</span><span class="n">launch_time</span><span class="p">);</span>
-
-<span class="c1">#passing and failing total test suite executions</span>
-<span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="n">test_suite_mapped_id</span><span class="p">),</span> <span class="nf">DAY</span><span class="p">(</span><span class="n">launch_time</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">google_dataset</span>
-<span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
-<span class="k">GROUP</span> <span class="k">BY</span> <span class="nf">DAY</span><span class="p">(</span><span class="n">launch_time</span><span class="p">);</span>
+<div class="highlight highlight-MySQL"><pre><span class="k">SELECT</span> <span class="nf">COUNT</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span> <span class="k">AS</span> <span class="n">total_change_requests</span><span class="p">,</span> 
+<span class="p">(</span><span class="k">CASE</span> <span class="k">WHEN</span> <span class="n">stage</span> <span class="o">=</span> <span class="s1">'POST'</span> <span class="k">THEN</span> <span class="s1">'ECT phase'</span>
+      <span class="k">WHEN</span> <span class="n">stage</span> <span class="o">=</span> <span class="s1">'PRES'</span> <span class="k">THEN</span> <span class="s1">'ICT phase'</span>
+      <span class="k">ELSE</span> <span class="n">stage</span> 
+<span class="n">END</span><span class="p">)</span> <span class="k">AS</span> <span class="n">stage</span> 
+<span class="k">FROM</span> <span class="n">google_dataset</span>
+<span class="k">WHERE</span> <span class="n">stage</span> <span class="k">IN</span> <span class="p">(</span><span class="s1">'POST'</span><span class="p">,</span> <span class="s1">'PRES'</span><span class="p">)</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">stage</span>
 </pre></div>
 
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Query Results:</strong></p>
+
+<table>
+<thead><tr>
+<th>total_test_suite_executions</th>
+<th align="center">stage</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>2037183</td>
+<td align="center">ECT phase</td>
+</tr>
+<tr>
+<td>1431765</td>
+<td align="center">ICT phase</td>
+</tr>
+</tbody>
+</table><p><br></p>
+
+<p><strong>Computation of Flaky Tests</strong></p>
+
+<hr><p><img class="emoji" title=":o:" alt=":o:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2b55-fe0f.png" height="20" width="20" align="absmiddle"><strong>What is total failure for test suite executions and failure and flake rate?</strong></p>
+
+<hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>MySql Implementation:</strong> (flaky_tests.sql)</p>
+
+<div class="highlight highlight-MySQL"><pre><span class="k">SELECT</span>  <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+        <span class="n">change_request</span><span class="p">,</span>
+        <span class="n">shard_number</span><span class="p">,</span>
+        <span class="n">stage</span><span class="p">,</span> 
+        <span class="n">failed</span><span class="p">,</span> 
+        <span class="n">flake</span><span class="p">,</span>
+        <span class="n">passed</span><span class="p">,</span>
+        <span class="nf">AVG</span><span class="p">((((</span><span class="n">execution_time</span> <span class="o">%</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">))</span> <span class="o">%</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="mi">60</span><span class="p">))</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span> <span class="k">AS</span> <span class="n">avg_execution_time_in_sec</span><span class="p">,</span>     
+        <span class="p">(</span><span class="nf">SUM</span><span class="p">(</span><span class="n">failed</span> <span class="o">+</span> <span class="n">flake</span><span class="p">)</span><span class="o">*</span><span class="mi">1</span><span class="p">)</span> <span class="k">AS</span> <span class="n">total_failed</span><span class="p">,</span>
+        <span class="nf">TRUNCATE</span><span class="p">((</span><span class="n">failed</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">failed</span> <span class="o">+</span> <span class="n">passed</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span> <span class="k">AS</span> <span class="n">failure_rate</span><span class="p">,</span>
+        <span class="nf">TRUNCATE</span><span class="p">((</span><span class="n">flake</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">flake</span> <span class="o">+</span> <span class="n">failed</span> <span class="o">+</span> <span class="n">passed</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span> <span class="k">AS</span> <span class="n">flake_rate</span>
+ <span class="k">FROM</span>
+<span class="p">(</span>
+<span class="k">SELECT</span>  <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+        <span class="nf">COUNT</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">change_request</span><span class="p">,</span>
+        <span class="nf">COUNT</span><span class="p">(</span><span class="n">shard_number</span><span class="p">)</span> <span class="k">AS</span> <span class="n">shard_number</span><span class="p">,</span>
+        <span class="n">stage</span><span class="p">,</span>
+        <span class="n">execution_time</span><span class="p">,</span>
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"FAILED"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"FLAKY"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">flake</span><span class="p">,</span>
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"PASSED"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+    <span class="k">FROM</span>
+      <span class="p">(</span>
+        <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+               <span class="n">change_request</span><span class="p">,</span>
+               <span class="n">shard_number</span><span class="p">,</span> 
+               <span class="k">IF</span><span class="p">((</span><span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">"FLAKY"</span><span class="p">,</span> <span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+               <span class="n">stage</span><span class="p">,</span> 
+               <span class="n">execution_time</span><span class="p">,</span>
+               <span class="n">failed</span><span class="p">,</span>
+               <span class="n">passed</span>
+
+        <span class="k">FROM</span>
+        <span class="p">(</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">flaky</span> <span class="n">tests</span>
+         <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+                   <span class="nf">COUNT</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">change_request</span><span class="p">,</span> 
+                   <span class="nf">COUNT</span><span class="p">(</span><span class="n">shard_number</span><span class="p">)</span> <span class="k">AS</span> <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">test_status</span><span class="p">,</span>
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="nf">SUM</span><span class="p">(</span><span class="n">execution_time</span><span class="p">)</span> <span class="k">AS</span> <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+              <span class="k">FROM</span> <span class="n">google_dataset</span>
+             <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+          <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+            <span class="p">)</span> <span class="k">AS</span> <span class="n">T</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+        <span class="k">Union</span> <span class="k">ALL</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">failing</span> <span class="n">tests</span>
+          <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+               <span class="n">change_request</span><span class="p">,</span>
+               <span class="n">shard_number</span><span class="p">,</span> 
+               <span class="k">IF</span><span class="p">((</span><span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">and</span> <span class="n">passed</span> <span class="o">=</span> <span class="mi">0</span><span class="p">),</span><span class="s2">"FAILED"</span><span class="p">,</span><span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+               <span class="n">stage</span><span class="p">,</span> 
+               <span class="n">execution_time</span><span class="p">,</span>
+               <span class="n">failed</span><span class="p">,</span>
+               <span class="n">passed</span>    
+         <span class="k">FROM</span>
+          <span class="p">(</span>
+            <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+                   <span class="n">change_request</span><span class="p">,</span> 
+                   <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">test_status</span><span class="p">,</span>
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+              <span class="k">FROM</span> <span class="n">google_dataset</span>
+             <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+          <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+            <span class="p">)</span> <span class="k">AS</span> <span class="n">R</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+       <span class="k">UNION</span> <span class="k">ALL</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">passing</span> <span class="n">tests</span>
+          <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+                <span class="n">change_request</span><span class="p">,</span>
+                <span class="n">shard_number</span><span class="p">,</span> 
+                <span class="k">IF</span><span class="p">((</span><span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">and</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span><span class="s2">"PASSED"</span><span class="p">,</span><span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+                <span class="n">stage</span><span class="p">,</span> 
+                <span class="n">execution_time</span><span class="p">,</span>
+                <span class="n">failed</span><span class="p">,</span>
+                <span class="n">passed</span>    
+          <span class="k">FROM</span>
+          <span class="p">(</span>
+            <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+                   <span class="n">change_request</span><span class="p">,</span> 
+                   <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">test_status</span><span class="p">,</span>
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+              <span class="k">FROM</span> <span class="n">google_dataset</span>
+             <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+          <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+             <span class="p">)</span> <span class="k">AS</span> <span class="n">P</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+       <span class="p">)</span> <span class="k">AS</span> <span class="n">MM</span>
+        <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span>
+<span class="p">)</span> <span class="k">AS</span> <span class="n">RRR</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span>
+<span class="k">HAVING</span> <span class="n">failure_rate</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">flake_rate</span> <span class="o">&gt;</span> <span class="mi">0</span>
+</pre></div>
+
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Results:</strong></p>
+
+<p><a href="https://camo.githubusercontent.com/13e66f45e9f20affad0799b8bfd905755269b206/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f746573745f666c616b65735f726573756c74732e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/13e66f45e9f20affad0799b8bfd905755269b206/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f746573745f666c616b65735f726573756c74732e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/july_29_2014/test_flakes_results.jpg" style="max-width:100%;"></a></p>
+
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Graph Representation:</strong></p>
+
+<p><a href="https://camo.githubusercontent.com/a46ab2bb0d998f31e40de8cf5d80ddef4941633b/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f746573745f666c616b65735f67726170682e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/a46ab2bb0d998f31e40de8cf5d80ddef4941633b/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f746573745f666c616b65735f67726170682e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/july_29_2014/test_flakes_graph.jpg" style="max-width:100%;"></a></p>
+
+<p><img class="emoji" title=":bulb:" alt=":bulb:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f4a1.png" height="20" width="20" align="absmiddle"><strong>Concluding Remarks</strong></p>
+
+<p><img class="emoji" title=":o:" alt=":o:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2b55-fe0f.png" height="20" width="20" align="absmiddle"> The following results are obtained calculating flake rate and failure rate in terms of test suite executions:</p>
+
 <ul>
 <li>
-<p>Graph: Categorization By <strong>Test Suite Executions By Day</strong> (number_of_change_request_by_day_failed.xsls)</p>
+<strong>NOTE:</strong> Grouping is determined in terms of test_suite_id parameter</li>
+</ul><table>
+<thead><tr>
+<th>Total Distinct Test Suites (TDCR)</th>
+<th align="center">Total Passed Per Tests</th>
+<th align="center">Total Failed Tests</th>
+<th align="center">Total Flake Per Tests (TFT)</th>
+<th align="center">Total % of Flaky Tests = TFT/TDCR</th>
+</tr></thead>
+<tbody><tr>
+<td>5555</td>
+<td align="center">15613</td>
+<td align="center">260</td>
+<td align="center">37</td>
+<td align="center">260/5555=0.0456</td>
+</tr></tbody>
+</table><ul>
+<li><strong>Total Test Failures = Flake + Failed = 37 + 223 = 260</strong></li>
+</ul><p><img class="emoji" title=":bulb:" alt=":bulb:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f4a1.png" height="20" width="20" align="absmiddle"> As we can observe, <strong>4.56%</strong> test failures were caused by flaky tests. 
+<br></p>
 
-<ul>
-<li>Total failing change requests by day</li>
-</ul>
-</li>
-</ul><p><a href="https://camo.githubusercontent.com/b557f805fb5677a231634a792c55c6afedbbb4b4/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6e756d6265725f6f665f746573745f73756974655f62795f6461795f6661696c65642e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/b557f805fb5677a231634a792c55c6afedbbb4b4/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6e756d6265725f6f665f746573745f73756974655f62795f6461795f6661696c65642e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/number_of_test_suite_by_day_failed.jpg" style="max-width:100%;"></a></p>
+<hr><p><strong>Computation of P--&gt;F, F--&gt;P, F--&gt;F, and P--&gt;P Test Transitions</strong></p>
 
-<p><br></p>
+<hr><hr><p><img class="emoji" title=":o:" alt=":o:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2b55-fe0f.png" height="20" width="20" align="absmiddle"><strong>What are the average transitions of test suites in terms of failure and passing across ECT &amp; ICT phase?</strong></p>
 
-<ul>
-<li>
-<p>Graph: Categorization By <strong>Test Suite Executions By Day</strong> (number_of_test_suite_by_day_passed_failed.xsls)</p>
+<hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Python Implementation:</strong> (ect_transition.py)</p>
 
-<ul>
-<li>Total passing and failing test executions by day</li>
-</ul>
-</li>
-</ul><p><a href="https://camo.githubusercontent.com/bb6ac82098af5646319352b98886d8d96109eb3b/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6e756d6265725f6f665f746573745f73756974655f62795f6461795f7061737365645f6661696c65642e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/bb6ac82098af5646319352b98886d8d96109eb3b/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6e756d6265725f6f665f746573745f73756974655f62795f6461795f7061737365645f6661696c65642e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/number_of_test_suite_by_day_passed_failed.jpg" style="max-width:100%;"></a></p>
-
-<p><br></p>
-
-<hr><p>Flaky Tests - Transition Failure Rates (ect_transition.py)</p>
-
-<hr><div class="highlight highlight-python"><pre><span class="kn">import</span> <span class="nn">csv</span>
+<div class="highlight highlight-python"><pre><span class="kn">import</span> <span class="nn">csv</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">pdb</span>
 
@@ -894,8 +1136,8 @@ body .task-list{
     <span class="k">return</span> <span class="s">"&lt;Google(mapped_id='</span><span class="si">%s</span><span class="s">', change_request='</span><span class="si">%d</span><span class="s">', shard_number='</span><span class="si">%d</span><span class="s">', status='</span><span class="si">%s</span><span class="s">', launch_time='</span><span class="si">%s</span><span class="s">', execution_time='</span><span class="si">%d</span><span class="s">', test_size='</span><span class="si">%s</span><span class="s">', test_language='</span><span class="si">%s</span><span class="s">')&gt;"</span> \
     <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shard_number</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_language</span><span class="p">)</span>
 
-<span class="c"># engine = create_engine('mysql+pymysql://rkrasniq@cse.unl.edu/rkrasniq?passwd=******')</span>
-<span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">'mysql+pymysql://root@127.0.0.1/google?passwd=******&amp;'</span><span class="p">)</span>
+<span class="c"># engine = create_engine('mysql+pymysql://r*****@*****/******?passwd=*******')</span>
+<span class="n">engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s">'mysql+pymysql://*******/******?passwd=********&amp;'</span><span class="p">)</span>
 <span class="n">Session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
 <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
 <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
@@ -904,6 +1146,8 @@ body .task-list{
 <span class="c"># print str(date_object)</span>
 
 <span class="c"># myobject = Google('ts1', 1, 'post', 'failed', date_object, 1111, 'large', 222, 333, 'py')</span>
+
+
 
 
 <span class="k">def</span> <span class="nf">import_csv</span><span class="p">(</span><span class="nb">file</span><span class="p">):</span>
@@ -943,53 +1187,196 @@ body .task-list{
 <span class="c"># flaky_query = "SELECT * FROM google_dataset WHERE stage=\"POST\" GROUP BY test_suite_mapped_id, change_request, shard_number ORDER BY test_suite_mapped_id, change_request,shard_number ASC"</span>
 <span class="c"># session.query(Google).from_statement(flaky_query).all()</span>
 
-<span class="n">data</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Google</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Google</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="s">"POST"</span><span class="p">)</span> \
-<span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Google</span><span class="o">.</span><span class="n">test_suite_mapped_id</span><span class="o">.</span><span class="n">asc</span><span class="p">())</span> \
-<span class="o">.</span><span class="n">all</span><span class="p">()</span>
 <span class="c"># .group_by(Google.test_suite_mapped_id, Google.change_request, Google.shard_number) \</span>
 
-<span class="n">prev</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">def</span> <span class="nf">v1</span><span class="p">():</span>
+  <span class="n">data</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Google</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Google</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="s">"POST"</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Google</span><span class="o">.</span><span class="n">test_suite_mapped_id</span><span class="o">.</span><span class="n">asc</span><span class="p">())</span> \
+  <span class="o">.</span><span class="n">all</span><span class="p">()</span>
 
-<span class="n">f_to_p</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">f_to_f</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">p_to_f</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">p_to_p</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">prev</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="n">trans_change_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="p">())</span>
-<span class="k">for</span> <span class="n">curr</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-  <span class="k">if</span> <span class="n">curr</span><span class="o">.</span><span class="n">test_suite_mapped_id</span> <span class="o">==</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_suite_mapped_id</span><span class="p">:</span>    
-    <span class="k">if</span> <span class="n">curr</span><span class="o">.</span><span class="n">test_status</span> <span class="o">!=</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_status</span><span class="p">:</span>
-      <span class="k">if</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_status</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">:</span>      
-        <span class="n">f_to_p</span> <span class="o">+=</span> <span class="mi">1</span>             
+  <span class="n">f_to_p</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">f_to_f</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">p_to_f</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">p_to_p</span> <span class="o">=</span> <span class="mi">0</span>
+
+  <span class="n">trans_change_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="p">())</span>
+  <span class="k">for</span> <span class="n">curr</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+    <span class="k">if</span> <span class="n">curr</span><span class="o">.</span><span class="n">test_suite_mapped_id</span> <span class="o">==</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_suite_mapped_id</span><span class="p">:</span>    
+      <span class="k">if</span> <span class="n">curr</span><span class="o">.</span><span class="n">test_status</span> <span class="o">!=</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_status</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_status</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">:</span>      
+          <span class="n">f_to_p</span> <span class="o">+=</span> <span class="mi">1</span>             
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">p_to_f</span> <span class="o">+=</span> <span class="mi">1</span>
       <span class="k">else</span><span class="p">:</span>
-        <span class="n">p_to_f</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_status</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">:</span>
+          <span class="n">f_to_f</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">p_to_p</span> <span class="o">+=</span> <span class="mi">1</span> 
     <span class="k">else</span><span class="p">:</span>
-      <span class="k">if</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_status</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">:</span>
-        <span class="n">f_to_f</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="n">trans_change_dict</span><span class="p">[</span><span class="n">curr</span><span class="o">.</span><span class="n">test_suite_mapped_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_to_p</span><span class="p">,</span> <span class="n">f_to_f</span><span class="p">,</span> <span class="n">p_to_f</span><span class="p">,</span> <span class="n">p_to_p</span><span class="p">)</span>
+      <span class="n">f_to_p</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="n">f_to_f</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="n">p_to_f</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="n">p_to_p</span> <span class="o">=</span> <span class="mi">0</span>
+
+      <span class="n">prev</span> <span class="o">=</span> <span class="n">curr</span>
+
+  <span class="k">print</span> <span class="s">"Test Suite</span><span class="se">\t</span><span class="s">F-&gt;P</span><span class="se">\t</span><span class="s">F-&gt;F</span><span class="se">\t</span><span class="s">P-&gt;F</span><span class="se">\t</span><span class="s">P-&gt;P"</span>
+  <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">trans_change_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="n">trans_change_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>  
+    <span class="n">total</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">entry</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="mi">100</span>
+    <span class="k">if</span> <span class="n">total</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="k">print</span> <span class="s">"</span><span class="si">%s</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="s">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">,</span> <span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">,</span> <span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">,</span> <span class="n">entry</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">print</span> <span class="s">"</span><span class="si">%s</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="s">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">v2</span><span class="p">():</span>
+  <span class="n">data</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Google</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Google</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="s">"POST"</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">Google</span><span class="o">.</span><span class="n">test_suite_mapped_id</span><span class="o">.</span><span class="n">asc</span><span class="p">())</span> \
+  <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+  <span class="k">for</span> <span class="n">curr</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+    <span class="k">if</span> <span class="n">curr</span><span class="o">.</span><span class="n">test_suite_mapped_id</span> <span class="o">==</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_suite_mapped_id</span> \
+    <span class="ow">and</span> <span class="n">curr</span><span class="o">.</span><span class="n">change_request</span> <span class="o">==</span> <span class="n">prev</span><span class="o">.</span><span class="n">change_request</span><span class="p">:</span>
+      <span class="k">pass</span>
+
+
+<span class="k">def</span> <span class="nf">v3</span><span class="p">():</span>
+  <span class="n">sql</span> <span class="o">=</span> <span class="s">"SELECT * FROM (  SELECT id,         test_suite_name,         test_suite_mapped_id,         change_request,         stage,         test_status,         launch_time,         execution_time,         test_size,         shard_number,         run_number,         test_language FROM      (      SELECT id,              test_suite_name,             test_suite_mapped_id,             change_request,             stage,             (CASE WHEN test_status = 'PASSED' THEN 'FAILED' WHEN test_status = 'FAILED' THEN 'FAILED' ELSE 'FAILED' END) AS test_status,             launch_time,              execution_time,              test_size,              shard_number,              run_number,              test_language,       GROUP_CONCAT(TEST_STATUS SEPARATOR ' ') AS test_status2      FROM google_dataset      WHERE stage = </span><span class="se">\"</span><span class="s">POST</span><span class="se">\"</span><span class="s">     GROUP BY test_suite_mapped_id,change_request ) AS T  WHERE test_status2 REGEXP '(PASSED) (FAILED)' UNION ALL  SELECT id,         test_suite_name,         test_suite_mapped_id,         change_request,         stage,         test_status,         launch_time,         execution_time,         test_size,         shard_number,         run_number,         test_language  FROM (          SELECT d.*,               GROUP_CONCAT(test_status SEPARATOR ' ') AS test_status2      FROM google_dataset d      WHERE stage = </span><span class="se">\"</span><span class="s">POST</span><span class="se">\"</span><span class="s">        GROUP BY test_suite_mapped_id,change_request     ) AS T  WHERE test_status2 NOT LIKE '</span><span class="si">%F</span><span class="s">AILED%' UNION ALL  SELECT id,         test_suite_name,         test_suite_mapped_id,         change_request,         stage,         test_status,         launch_time,         execution_time,         test_size,         shard_number,         run_number,         test_language   FROM (           SELECT d.* ,GROUP_CONCAT(test_status SEPARATOR ' ') AS test_status2        FROM google_dataset d      WHERE stage = </span><span class="se">\"</span><span class="s">POST</span><span class="se">\"</span><span class="s">       GROUP BY test_suite_mapped_id,change_request ) AS T  WHERE test_status2 NOT LIKE '%PASSED%' ) AS KK GROUP BY test_suite_mapped_id,change_request ORDER BY test_suite_mapped_id,change_request;"</span>
+  <span class="c"># sql = "SELECT id, test_suite_name, test_suite_mapped_id, change_request, stage, test_status, launch_time, execution_time, test_size, shard_number, run_number, test_language FROM (SELECT d.*, GROUP_CONCAT(TEST_STATUS SEPARATOR \' \') AS test_status2 FROM GOOGLE_DATASET d WHERE stage = \"POST\" GROUP BY TEST_SUITE_MAPPED_ID, CHANGE_REQUEST) AS T WHERE test_status2 REGEXP \'(PASSED) (FAILED)\';"</span>
+  <span class="n">result</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Google</span><span class="p">)</span><span class="o">.</span><span class="n">from_statement</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>    
+
+  <span class="n">prev</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+  <span class="n">f_to_p</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">f_to_f</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">p_to_f</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">p_to_p</span> <span class="o">=</span> <span class="mi">0</span>
+
+  <span class="n">trans_change_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="p">())</span>
+  <span class="k">for</span> <span class="n">curr</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+    <span class="k">if</span> <span class="n">curr</span><span class="o">.</span><span class="n">test_suite_mapped_id</span> <span class="o">==</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_suite_mapped_id</span><span class="p">:</span>    
+      <span class="k">if</span> <span class="n">curr</span><span class="o">.</span><span class="n">test_status</span> <span class="o">!=</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_status</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_status</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">:</span>      
+          <span class="n">f_to_p</span> <span class="o">+=</span> <span class="mi">1</span>             
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">p_to_f</span> <span class="o">+=</span> <span class="mi">1</span>
       <span class="k">else</span><span class="p">:</span>
-        <span class="n">p_to_p</span> <span class="o">+=</span> <span class="mi">1</span> 
-  <span class="k">else</span><span class="p">:</span>
-    <span class="n">trans_change_dict</span><span class="p">[</span><span class="n">curr</span><span class="o">.</span><span class="n">test_suite_mapped_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_to_p</span><span class="p">,</span> <span class="n">f_to_f</span><span class="p">,</span> <span class="n">p_to_f</span><span class="p">,</span> <span class="n">p_to_p</span><span class="p">)</span>
-    <span class="n">f_to_p</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">f_to_f</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">p_to_f</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">p_to_p</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">prev</span><span class="o">.</span><span class="n">test_status</span> <span class="o">==</span> <span class="s">"FAILED"</span><span class="p">:</span>
+          <span class="n">f_to_f</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+          <span class="n">p_to_p</span> <span class="o">+=</span> <span class="mi">1</span> 
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">trans_change_dict</span><span class="p">[</span><span class="n">curr</span><span class="o">.</span><span class="n">test_suite_mapped_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_to_p</span><span class="p">,</span> <span class="n">f_to_f</span><span class="p">,</span> <span class="n">p_to_f</span><span class="p">,</span> <span class="n">p_to_p</span><span class="p">)</span>
+      <span class="n">f_to_p</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="n">f_to_f</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="n">p_to_f</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="n">p_to_p</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="n">prev</span> <span class="o">=</span> <span class="n">curr</span>
+      <span class="n">prev</span> <span class="o">=</span> <span class="n">curr</span>
 
-<span class="k">print</span> <span class="s">"Test Suite</span><span class="se">\t</span><span class="s">F-&gt;P</span><span class="se">\t</span><span class="s">F-&gt;F</span><span class="se">\t</span><span class="s">P-&gt;F</span><span class="se">\t</span><span class="s">P-&gt;P"</span>
-<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">trans_change_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-  <span class="n">entry</span> <span class="o">=</span> <span class="n">trans_change_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>  
-  <span class="n">total</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">entry</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="mi">100</span>
-  <span class="k">if</span> <span class="n">total</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">"</span><span class="si">%s</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="s">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">,</span> <span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">,</span> <span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">,</span> <span class="n">entry</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span>
-  <span class="k">else</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">"</span><span class="si">%s</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="s">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> 
+  <span class="k">print</span> <span class="s">"Test Suite</span><span class="se">\t</span><span class="s">F-&gt;P</span><span class="se">\t</span><span class="s">F-&gt;F</span><span class="se">\t</span><span class="s">P-&gt;F</span><span class="se">\t</span><span class="s">P-&gt;P"</span>
+  <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">trans_change_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="n">trans_change_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>  
+    <span class="n">total</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">entry</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="mi">100</span>
+    <span class="k">if</span> <span class="n">total</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="k">print</span> <span class="s">"</span><span class="si">%s</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="s">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">,</span> <span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">,</span> <span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">,</span> <span class="n">entry</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">print</span> <span class="s">"</span><span class="si">%s</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="s">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+
+
+<span class="n">v3</span><span class="p">()</span>
 </pre></div>
 
-<p><img class="emoji" title=":bulb:" alt=":bulb:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f4a1.png" height="20" width="20" align="absmiddle"><strong>Note:</strong> For same test suite the four category of transition were calculated</p>
+<p><strong>SQL Implementation that retrieves ECT passing and failure results for each test suite. Same applies for ICT transitions.</strong></p>
 
-<hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"> Python Results for <strong>ECT (POST)</strong> Transitons:</p>
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Results:</strong></p>
+
+<div class="highlight highlight-MySQL"><pre><span class="k">SELECT</span> <span class="o">*</span>
+<span class="k">FROM</span>
+<span class="p">(</span> 
+<span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span>
+        <span class="n">test_suite_name</span><span class="p">,</span>
+        <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+        <span class="n">change_request</span><span class="p">,</span>
+        <span class="n">stage</span><span class="p">,</span>
+        <span class="n">test_status</span><span class="p">,</span>
+        <span class="n">launch_time</span><span class="p">,</span>
+        <span class="n">execution_time</span><span class="p">,</span>
+        <span class="n">test_size</span><span class="p">,</span>
+        <span class="n">shard_number</span><span class="p">,</span>
+        <span class="n">run_number</span><span class="p">,</span>
+        <span class="n">test_language</span>
+<span class="k">FROM</span> 
+    <span class="p">(</span>
+     <span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> 
+            <span class="n">test_suite_name</span><span class="p">,</span>
+            <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+            <span class="n">change_request</span><span class="p">,</span>
+            <span class="n">stage</span><span class="p">,</span>
+            <span class="p">(</span><span class="k">CASE</span> <span class="k">WHEN</span> <span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span> <span class="k">THEN</span> <span class="s1">'FAILED'</span> <span class="k">WHEN</span> <span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span> <span class="k">THEN</span> <span class="s1">'FAILED'</span> <span class="k">ELSE</span> <span class="s1">'FAILED'</span> <span class="n">END</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+            <span class="n">launch_time</span><span class="p">,</span> 
+            <span class="n">execution_time</span><span class="p">,</span> 
+            <span class="n">test_size</span><span class="p">,</span> 
+            <span class="n">shard_number</span><span class="p">,</span> 
+            <span class="n">run_number</span><span class="p">,</span> 
+            <span class="n">test_language</span><span class="p">,</span>
+            <span class="nf">GROUP_CONCAT</span><span class="p">(</span><span class="n">TEST_STATUS</span> <span class="k">SEPARATOR</span> <span class="s1">' '</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status2</span> 
+       <span class="k">FROM</span> <span class="n">google_dataset</span> 
+      <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"PRES"</span> 
+   <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span><span class="n">change_request</span>
+<span class="p">)</span> <span class="k">AS</span> <span class="n">T</span> 
+<span class="k">WHERE</span> <span class="n">test_status2</span> <span class="k">REGEXP</span> <span class="s1">'(PASSED) (FAILED)'</span>
+<span class="k">UNION</span> <span class="k">ALL</span>
+ <span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span>
+        <span class="n">test_suite_name</span><span class="p">,</span>
+        <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+        <span class="n">change_request</span><span class="p">,</span>
+        <span class="n">stage</span><span class="p">,</span>
+        <span class="n">test_status</span><span class="p">,</span>
+        <span class="n">launch_time</span><span class="p">,</span>
+        <span class="n">execution_time</span><span class="p">,</span>
+        <span class="n">test_size</span><span class="p">,</span>
+        <span class="n">shard_number</span><span class="p">,</span>
+        <span class="n">run_number</span><span class="p">,</span>
+        <span class="n">test_language</span> 
+<span class="k">FROM</span> <span class="p">(</span>  
+       <span class="k">SELECT</span> <span class="n">d</span><span class="p">.</span><span class="o">*</span><span class="p">,</span>
+              <span class="nf">GROUP_CONCAT</span><span class="p">(</span><span class="n">test_status</span> <span class="k">SEPARATOR</span> <span class="s1">' '</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status2</span> 
+         <span class="k">FROM</span> <span class="n">google_dataset</span> <span class="n">d</span>
+        <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"PRES"</span> 
+        <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span><span class="n">change_request</span>
+    <span class="p">)</span> <span class="k">AS</span> <span class="n">T</span> 
+<span class="k">WHERE</span> <span class="n">test_status2</span> <span class="k">NOT</span> <span class="k">LIKE</span> <span class="s1">'%FAILED%'</span>
+<span class="k">UNION</span> <span class="k">ALL</span>
+ <span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span>
+        <span class="n">test_suite_name</span><span class="p">,</span>
+        <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+        <span class="n">change_request</span><span class="p">,</span>
+        <span class="n">stage</span><span class="p">,</span>
+        <span class="n">test_status</span><span class="p">,</span>
+        <span class="n">launch_time</span><span class="p">,</span>
+        <span class="n">execution_time</span><span class="p">,</span>
+        <span class="n">test_size</span><span class="p">,</span>
+        <span class="n">shard_number</span><span class="p">,</span>
+        <span class="n">run_number</span><span class="p">,</span>
+        <span class="n">test_language</span> 
+ <span class="k">FROM</span> <span class="p">(</span> 
+         <span class="k">SELECT</span> <span class="n">d</span><span class="p">.</span><span class="o">*</span> <span class="p">,</span><span class="nf">GROUP_CONCAT</span><span class="p">(</span><span class="n">test_status</span> <span class="k">SEPARATOR</span> <span class="s1">' '</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status2</span> 
+           <span class="k">FROM</span> <span class="n">google_dataset</span> <span class="n">d</span>
+          <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"PRES"</span> 
+       <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span><span class="n">change_request</span>
+<span class="p">)</span> <span class="k">AS</span> <span class="n">T</span> 
+<span class="k">WHERE</span> <span class="n">test_status2</span> <span class="k">NOT</span> <span class="k">LIKE</span> <span class="s1">'%PASSED%'</span>
+<span class="p">)</span> <span class="k">AS</span> <span class="n">KK</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span><span class="n">change_request</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span><span class="n">change_request</span><span class="p">;</span>
+</pre></div>
+
+<hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"> Python Results for <strong>ECT - (POST)</strong> Transitons:</p>
 
 <table>
 <thead><tr>
@@ -1001,12 +1388,12 @@ body .task-list{
 </tr></thead>
 <tbody><tr>
 <td align="center"><strong>(%)</strong></td>
-<td align="center">0.0283</td>
-<td align="center">0.0258</td>
-<td align="center">0.0785</td>
-<td align="center">99.867</td>
+<td align="center">0.069290131</td>
+<td align="center">0.0571778</td>
+<td align="center">0.072501064</td>
+<td align="center">99.801031</td>
 </tr></tbody>
-</table><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"> Python Results for <strong>ICT (PRES)</strong> Transitons:</p>
+</table><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"> Python Results for <strong>ICT - (PRE)</strong> Transitons:</p>
 
 <table>
 <thead><tr>
@@ -1018,9 +1405,505 @@ body .task-list{
 </tr></thead>
 <tbody><tr>
 <td align="center"><strong>(%)</strong></td>
-<td align="center">0.0410</td>
-<td align="center">0.0240</td>
-<td align="center">0.0420</td>
-<td align="center">73.02</td>
+<td align="center">0.093662583</td>
+<td align="center">0.068411971</td>
+<td align="center">0.051628306</td>
+<td align="center">99.46214803</td>
 </tr></tbody>
-</table><hr><p><img class="emoji" title=":copyright:" alt=":copyright:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/00a9.png" height="20" width="20" align="absmiddle"> Rrezarta Krasniqi - University of Nebraska - Lincoln</p></body></html>
+</table><p><br></p>
+
+<p><strong>Computation of tests grouped by languages</strong></p>
+
+<hr><p><img class="emoji" title=":o:" alt=":o:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2b55-fe0f.png" height="20" width="20" align="absmiddle"><strong>What is total of number of failures by test suites determined by a language?</strong></p>
+
+<hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>MySql Implementation:</strong> (group_by_lang.sql)</p>
+
+<div class="highlight highlight-MySQL"><pre><span class="k">SELECT</span>  <span class="n">test_language</span><span class="p">,</span>
+        <span class="n">stage</span><span class="p">,</span> 
+        <span class="n">failed</span><span class="p">,</span> 
+        <span class="n">flake</span><span class="p">,</span>
+        <span class="n">passed</span><span class="p">,</span>
+        <span class="nf">AVG</span><span class="p">((((</span><span class="n">execution_time</span> <span class="o">%</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">))</span> <span class="o">%</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="mi">60</span><span class="p">))</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span> <span class="k">AS</span> <span class="n">avg_execution_time_in_sec</span><span class="p">,</span>     
+        <span class="p">(</span><span class="nf">SUM</span><span class="p">(</span><span class="n">failed</span> <span class="o">+</span> <span class="n">flake</span><span class="p">)</span><span class="o">*</span><span class="mi">1</span><span class="p">)</span> <span class="k">AS</span> <span class="n">total_failed</span><span class="p">,</span>
+        <span class="nf">TRUNCATE</span><span class="p">((</span><span class="n">failed</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">failed</span> <span class="o">+</span> <span class="n">passed</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span> <span class="k">AS</span> <span class="n">failure_rate</span><span class="p">,</span>
+        <span class="nf">TRUNCATE</span><span class="p">((</span><span class="n">flake</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">flake</span> <span class="o">+</span> <span class="n">failed</span> <span class="o">+</span> <span class="n">passed</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span> <span class="k">AS</span> <span class="n">flake_rate</span>
+ <span class="k">FROM</span>
+<span class="p">(</span>
+<span class="k">SELECT</span>  <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+        <span class="nf">COUNT</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">change_request</span><span class="p">,</span>
+        <span class="nf">COUNT</span><span class="p">(</span><span class="n">shard_number</span><span class="p">)</span> <span class="k">AS</span> <span class="n">shard_number</span><span class="p">,</span>
+        <span class="n">test_language</span><span class="p">,</span>
+        <span class="n">stage</span><span class="p">,</span>
+        <span class="n">execution_time</span><span class="p">,</span>
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"FAILED"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"FLAKE"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">flake</span><span class="p">,</span>
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"PASSED"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+    <span class="k">FROM</span>
+      <span class="p">(</span>
+        <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+               <span class="n">change_request</span><span class="p">,</span>
+               <span class="n">shard_number</span><span class="p">,</span> 
+               <span class="n">test_language</span><span class="p">,</span>
+               <span class="k">IF</span><span class="p">((</span><span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">"FLAKE"</span><span class="p">,</span> <span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+               <span class="n">stage</span><span class="p">,</span> 
+               <span class="n">execution_time</span><span class="p">,</span>
+               <span class="n">failed</span><span class="p">,</span>
+               <span class="n">passed</span>
+
+        <span class="k">FROM</span>
+        <span class="p">(</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">flaky</span> <span class="n">tests</span>
+         <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+                   <span class="nf">COUNT</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">change_request</span><span class="p">,</span> 
+                   <span class="nf">COUNT</span><span class="p">(</span><span class="n">shard_number</span><span class="p">)</span> <span class="k">AS</span> <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">test_language</span><span class="p">,</span>
+                   <span class="n">test_status</span><span class="p">,</span>
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="nf">SUM</span><span class="p">(</span><span class="n">execution_time</span><span class="p">)</span> <span class="k">AS</span> <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+                   <span class="k">FROM</span> <span class="n">google_dataset</span>
+                   <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+                   <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+            <span class="p">)</span> <span class="k">AS</span> <span class="n">T</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+        <span class="k">Union</span> <span class="k">ALL</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">failing</span> <span class="n">tests</span>
+          <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+               <span class="n">change_request</span><span class="p">,</span>
+               <span class="n">shard_number</span><span class="p">,</span> 
+               <span class="n">test_language</span><span class="p">,</span>
+               <span class="k">IF</span><span class="p">((</span><span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">and</span> <span class="n">passed</span> <span class="o">=</span> <span class="mi">0</span><span class="p">),</span><span class="s2">"FAILED"</span><span class="p">,</span><span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+               <span class="n">stage</span><span class="p">,</span> 
+               <span class="n">execution_time</span><span class="p">,</span>
+               <span class="n">failed</span><span class="p">,</span>
+               <span class="n">passed</span>    
+         <span class="k">FROM</span>
+          <span class="p">(</span>
+            <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+                   <span class="n">change_request</span><span class="p">,</span> 
+                   <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">test_language</span><span class="p">,</span>
+                   <span class="n">test_status</span><span class="p">,</span>
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+                   <span class="k">FROM</span> <span class="n">google_dataset</span>
+                   <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+                 <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+            <span class="p">)</span> <span class="k">AS</span> <span class="n">R</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+       <span class="k">UNION</span> <span class="k">ALL</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">passing</span> <span class="n">tests</span>
+          <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+                <span class="n">change_request</span><span class="p">,</span>
+                <span class="n">shard_number</span><span class="p">,</span> 
+                <span class="n">test_language</span><span class="p">,</span>
+                <span class="k">IF</span><span class="p">((</span><span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">and</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span><span class="s2">"PASSED"</span><span class="p">,</span><span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+                <span class="n">stage</span><span class="p">,</span> 
+                <span class="n">execution_time</span><span class="p">,</span>
+                <span class="n">failed</span><span class="p">,</span>
+                <span class="n">passed</span>    
+          <span class="k">FROM</span>
+          <span class="p">(</span>
+            <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+                   <span class="n">change_request</span><span class="p">,</span> 
+                   <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">test_language</span><span class="p">,</span>
+                   <span class="n">test_status</span><span class="p">,</span>
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+                   <span class="k">FROM</span> <span class="n">google_dataset</span>
+                   <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+                 <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+             <span class="p">)</span> <span class="k">AS</span> <span class="n">P</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+       <span class="p">)</span> <span class="k">AS</span> <span class="n">MM</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_language</span>
+<span class="p">)</span> <span class="k">AS</span> <span class="n">RRR</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_language</span>
+</pre></div>
+
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Results:</strong></p>
+
+<p><a href="https://camo.githubusercontent.com/c90ac437bab4c9a44bd8ccccfcd736ea23bb4ef0/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f67726f75705f62795f6c616e675f726573756c74732e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/c90ac437bab4c9a44bd8ccccfcd736ea23bb4ef0/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f67726f75705f62795f6c616e675f726573756c74732e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/july_29_2014/group_by_lang_results.jpg" style="max-width:100%;"></a></p>
+
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Graph Representation:</strong></p>
+
+<p><a href="https://camo.githubusercontent.com/294119f3e27c2a46d693a5828502de5f04495f7a/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f67726f75705f62795f6c616e675f67726170682e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/294119f3e27c2a46d693a5828502de5f04495f7a/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f67726f75705f62795f6c616e675f67726170682e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/july_29_2014/group_by_lang_graph.jpg" style="max-width:100%;"></a><br></p>
+
+<p><strong>Computation of tests grouped by languages and their size</strong></p>
+
+<hr><p><img class="emoji" title=":o:" alt=":o:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2b55-fe0f.png" height="20" width="20" align="absmiddle"><strong>What is total of number of failures by test suites determined by a language and test size?</strong></p>
+
+<hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>MySql Implementation:</strong> (group_by_lang_size.sql)</p>
+
+<div class="highlight highlight-MySQL"><pre><span class="k">SELECT</span>  <span class="n">test_language</span><span class="p">,</span>
+        <span class="n">test_size</span><span class="p">,</span>
+        <span class="n">stage</span><span class="p">,</span> 
+        <span class="n">failed</span><span class="p">,</span> 
+        <span class="n">flake</span><span class="p">,</span>
+        <span class="n">passed</span><span class="p">,</span>
+        <span class="nf">AVG</span><span class="p">((((</span><span class="n">execution_time</span> <span class="o">%</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">))</span> <span class="o">%</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">*</span> <span class="mi">60</span><span class="p">))</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span> <span class="k">AS</span> <span class="n">avg_execution_time_in_sec</span><span class="p">,</span>     
+        <span class="p">(</span><span class="nf">SUM</span><span class="p">(</span><span class="n">failed</span> <span class="o">+</span> <span class="n">flake</span><span class="p">)</span><span class="o">*</span><span class="mi">1</span><span class="p">)</span> <span class="k">AS</span> <span class="n">total_failed</span><span class="p">,</span>
+        <span class="nf">TRUNCATE</span><span class="p">((</span><span class="n">failed</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">failed</span> <span class="o">+</span> <span class="n">passed</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span> <span class="k">AS</span> <span class="n">failure_rate</span><span class="p">,</span>
+        <span class="nf">TRUNCATE</span><span class="p">((</span><span class="n">flake</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">flake</span> <span class="o">+</span> <span class="n">failed</span> <span class="o">+</span> <span class="n">passed</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span> <span class="k">AS</span> <span class="n">flake_rate</span>
+ <span class="k">FROM</span>
+<span class="p">(</span>
+<span class="k">SELECT</span>  <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+        <span class="nf">COUNT</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">change_request</span><span class="p">,</span>
+        <span class="nf">COUNT</span><span class="p">(</span><span class="n">shard_number</span><span class="p">)</span> <span class="k">AS</span> <span class="n">shard_number</span><span class="p">,</span>
+        <span class="n">test_language</span><span class="p">,</span>
+        <span class="n">test_size</span><span class="p">,</span>
+        <span class="n">stage</span><span class="p">,</span>
+        <span class="n">execution_time</span><span class="p">,</span>
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"FAILED"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"FLAKE"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">flake</span><span class="p">,</span>
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"PASSED"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+    <span class="k">FROM</span>
+      <span class="p">(</span>
+        <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+               <span class="n">change_request</span><span class="p">,</span>
+               <span class="n">shard_number</span><span class="p">,</span> 
+               <span class="n">test_language</span><span class="p">,</span>
+               <span class="n">test_size</span><span class="p">,</span>
+               <span class="k">IF</span><span class="p">((</span><span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">"FLAKE"</span><span class="p">,</span> <span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+               <span class="n">stage</span><span class="p">,</span> 
+               <span class="n">execution_time</span><span class="p">,</span>
+               <span class="n">failed</span><span class="p">,</span>
+               <span class="n">passed</span>
+
+        <span class="k">FROM</span>
+        <span class="p">(</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">flaky</span> <span class="n">tests</span>
+         <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+                   <span class="nf">COUNT</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">change_request</span><span class="p">,</span> 
+                   <span class="nf">COUNT</span><span class="p">(</span><span class="n">shard_number</span><span class="p">)</span> <span class="k">AS</span> <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">test_language</span><span class="p">,</span>
+                   <span class="n">test_size</span><span class="p">,</span>
+                   <span class="n">test_status</span><span class="p">,</span>
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="nf">SUM</span><span class="p">(</span><span class="n">execution_time</span><span class="p">)</span> <span class="k">AS</span> <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+                   <span class="k">FROM</span> <span class="n">google_dataset</span>
+                   <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+                   <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+            <span class="p">)</span> <span class="k">AS</span> <span class="n">T</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+        <span class="k">Union</span> <span class="k">ALL</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">failing</span> <span class="n">tests</span>
+          <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+               <span class="n">change_request</span><span class="p">,</span>
+               <span class="n">shard_number</span><span class="p">,</span> 
+               <span class="n">test_language</span><span class="p">,</span>
+               <span class="n">test_size</span><span class="p">,</span>
+               <span class="k">IF</span><span class="p">((</span><span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">and</span> <span class="n">passed</span> <span class="o">=</span> <span class="mi">0</span><span class="p">),</span><span class="s2">"FAILED"</span><span class="p">,</span><span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+               <span class="n">stage</span><span class="p">,</span> 
+               <span class="n">execution_time</span><span class="p">,</span>
+               <span class="n">failed</span><span class="p">,</span>
+               <span class="n">passed</span>    
+         <span class="k">FROM</span>
+          <span class="p">(</span>
+            <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+                   <span class="n">change_request</span><span class="p">,</span> 
+                   <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">test_language</span><span class="p">,</span>
+                   <span class="n">test_size</span><span class="p">,</span>
+                   <span class="n">test_status</span><span class="p">,</span>
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+                   <span class="k">FROM</span> <span class="n">google_dataset</span>
+                   <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+                 <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+            <span class="p">)</span> <span class="k">AS</span> <span class="n">R</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+       <span class="k">UNION</span> <span class="k">ALL</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">passing</span> <span class="n">tests</span>
+          <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+                <span class="n">change_request</span><span class="p">,</span>
+                <span class="n">shard_number</span><span class="p">,</span> 
+                <span class="n">test_language</span><span class="p">,</span>
+                <span class="n">test_size</span><span class="p">,</span>
+                <span class="k">IF</span><span class="p">((</span><span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">and</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span><span class="s2">"PASSED"</span><span class="p">,</span><span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+                <span class="n">stage</span><span class="p">,</span> 
+                <span class="n">execution_time</span><span class="p">,</span>
+                <span class="n">failed</span><span class="p">,</span>
+                <span class="n">passed</span>    
+          <span class="k">FROM</span>
+          <span class="p">(</span>
+            <span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+                   <span class="n">change_request</span><span class="p">,</span> 
+                   <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">test_language</span><span class="p">,</span>
+                   <span class="n">test_size</span><span class="p">,</span>
+                   <span class="n">test_status</span><span class="p">,</span>
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+                   <span class="k">FROM</span> <span class="n">google_dataset</span>
+                   <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+                 <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+             <span class="p">)</span> <span class="k">AS</span> <span class="n">P</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> <span class="n">change_request</span>
+       <span class="p">)</span> <span class="k">AS</span> <span class="n">MM</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_language</span><span class="p">,</span> <span class="n">test_size</span>
+<span class="p">)</span> <span class="k">AS</span> <span class="n">RRR</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_language</span><span class="p">,</span><span class="n">test_size</span>
+</pre></div>
+
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Results:</strong></p>
+
+<p><a href="https://camo.githubusercontent.com/8fcbeefb4f3117723a379b980ac021ddab43bb11/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f67726f75705f62795f6c616e675f73697a655f726573756c74732e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/8fcbeefb4f3117723a379b980ac021ddab43bb11/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f67726f75705f62795f6c616e675f73697a655f726573756c74732e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/july_29_2014/group_by_lang_size_results.jpg" style="max-width:100%;"></a></p>
+
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Graph Representation:</strong></p>
+
+<p><a href="https://camo.githubusercontent.com/be34e155ee827e1243c480c33c07d92f5e8de4b6/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f67726f75705f62795f6c616e675f73697a655f67726170682e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/be34e155ee827e1243c480c33c07d92f5e8de4b6/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f67726f75705f62795f6c616e675f73697a655f67726170682e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/july_29_2014/group_by_lang_size_graph.jpg" style="max-width:100%;"></a></p>
+
+<p><br></p>
+
+<p><strong>Number of failing change requests</strong></p>
+
+<hr><p><img class="emoji" title=":o:" alt=":o:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2b55-fe0f.png" height="20" width="20" align="absmiddle"><strong>What is the number of total change requests distributed across day?</strong></p>
+
+<hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>MySql Implementation:</strong> (total_num_change_requests_per_day.sql)</p>
+
+<div class="highlight highlight-MySQL"><pre><span class="k">SELECT</span> <span class="n">change_request</span><span class="p">,</span>
+       <span class="nf">Day</span><span class="p">(</span><span class="n">launch_time</span><span class="p">)</span> <span class="k">As</span> <span class="n">day</span>
+ <span class="k">FROM</span>
+<span class="p">(</span>
+<span class="k">SELECT</span> 
+        <span class="n">change_request</span><span class="p">,</span> 
+        <span class="n">shard_number</span><span class="p">,</span> 
+        <span class="n">stage</span><span class="p">,</span>
+        <span class="n">launch_time</span><span class="p">,</span>
+        <span class="n">execution_time</span><span class="p">,</span> 
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"FAILED"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"FLAKE"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">flake</span><span class="p">,</span>
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"PASSED"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+    <span class="k">FROM</span>
+      <span class="p">(</span>
+        <span class="k">SELECT</span>  
+                <span class="n">change_request</span><span class="p">,</span>  
+                <span class="n">shard_number</span><span class="p">,</span> 
+                <span class="n">stage</span><span class="p">,</span>
+                <span class="n">launch_time</span><span class="p">,</span>
+                <span class="n">execution_time</span><span class="p">,</span> 
+                <span class="k">IF</span><span class="p">((</span><span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">"FLAKE"</span><span class="p">,</span> <span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+                <span class="n">failed</span><span class="p">,</span>
+                <span class="n">passed</span>
+
+        <span class="k">FROM</span>
+        <span class="p">(</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">flaky</span> <span class="n">tests</span>
+         <span class="k">SELECT</span>    
+                   <span class="nf">count</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">as</span> <span class="n">change_request</span><span class="p">,</span> 
+                   <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="n">launch_time</span><span class="p">,</span>
+                   <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+              <span class="k">FROM</span> <span class="n">google_dataset</span>
+             <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+          <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">change_request</span>
+            <span class="p">)</span> <span class="k">AS</span> <span class="n">T</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">change_request</span>
+        <span class="k">Union</span> <span class="k">ALL</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">failing</span> <span class="n">tests</span>
+          <span class="k">SELECT</span> 
+                <span class="n">change_request</span><span class="p">,</span> 
+                <span class="n">shard_number</span><span class="p">,</span>
+                <span class="n">stage</span><span class="p">,</span>
+                <span class="n">launch_time</span><span class="p">,</span>
+                <span class="n">execution_time</span><span class="p">,</span>
+                <span class="k">IF</span><span class="p">((</span><span class="n">passed</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">"FAILED"</span><span class="p">,</span> <span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+                <span class="n">failed</span><span class="p">,</span>
+                <span class="n">passed</span>
+         <span class="k">FROM</span>
+          <span class="p">(</span>
+            <span class="k">SELECT</span> 
+                   <span class="nf">count</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">as</span> <span class="n">change_request</span><span class="p">,</span> 
+                   <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="n">launch_time</span><span class="p">,</span>
+                   <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+              <span class="k">FROM</span> <span class="n">google_dataset</span>
+            <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+         <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">change_request</span>
+            <span class="p">)</span> <span class="k">AS</span> <span class="n">R</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">change_request</span>
+       <span class="k">UNION</span> <span class="k">ALL</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">passing</span> <span class="n">tests</span>
+          <span class="k">SELECT</span> 
+                <span class="n">change_request</span><span class="p">,</span>
+                <span class="n">shard_number</span><span class="p">,</span>
+                <span class="n">stage</span><span class="p">,</span>
+                <span class="n">launch_time</span><span class="p">,</span>
+                <span class="n">execution_time</span><span class="p">,</span>
+                <span class="k">IF</span><span class="p">((</span><span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">"PASSED"</span><span class="p">,</span> <span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+                <span class="n">failed</span><span class="p">,</span>
+                <span class="n">passed</span>
+          <span class="k">FROM</span>
+          <span class="p">(</span>
+            <span class="k">SELECT</span> 
+                   <span class="nf">count</span><span class="p">(</span><span class="n">change_request</span><span class="p">)</span> <span class="k">AS</span> <span class="n">change_request</span><span class="p">,</span>  
+                   <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="n">launch_time</span><span class="p">,</span>
+                   <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+             <span class="k">FROM</span> <span class="n">google_dataset</span>
+            <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+        <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">change_request</span>
+             <span class="p">)</span> <span class="k">AS</span> <span class="n">P</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">change_request</span>
+       <span class="p">)</span> <span class="k">AS</span> <span class="n">MM</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="nf">Day</span><span class="p">(</span><span class="n">launch_time</span><span class="p">)</span>
+<span class="p">)</span> <span class="k">AS</span> <span class="n">RRR</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="nf">Day</span><span class="p">(</span><span class="n">launch_time</span><span class="p">);</span>
+</pre></div>
+
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Results:</strong></p>
+
+<p><a href="https://camo.githubusercontent.com/ceb251bbccedb396958f9d578072f36a417a05f7/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f746f74616c5f6e756d5f6368616e67655f72657175657374735f7065725f6461792e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/ceb251bbccedb396958f9d578072f36a417a05f7/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f746f74616c5f6e756d5f6368616e67655f72657175657374735f7065725f6461792e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/july_29_2014/total_num_change_requests_per_day.jpg" style="max-width:100%;"></a></p>
+
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Graph Representation:</strong></p>
+
+<p><a href="https://camo.githubusercontent.com/34781c9106113becb0005b8549a1cb291f0d5a73/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f746f74616c5f6e756d5f6368616e67655f72657175657374735f7065725f6461795f67726170682e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/34781c9106113becb0005b8549a1cb291f0d5a73/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f746f74616c5f6e756d5f6368616e67655f72657175657374735f7065725f6461795f67726170682e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/july_29_2014/total_num_change_requests_per_day_graph.jpg" style="max-width:100%;"></a></p>
+
+<p><strong>Number of failing test suite executions</strong></p>
+
+<hr><p><img class="emoji" title=":o:" alt=":o:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2b55-fe0f.png" height="20" width="20" align="absmiddle"><strong>What is the number of total test suite executions distributed across day?</strong></p>
+
+<hr><p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>MySql Implementation:</strong> (total_test_executions_per_day.sql)</p>
+
+<div class="highlight highlight-MySQL"><pre><span class="k">SELECT</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+       <span class="nf">Day</span><span class="p">(</span><span class="n">launch_time</span><span class="p">)</span> <span class="k">As</span> <span class="n">day</span>
+ <span class="k">FROM</span>
+<span class="p">(</span>
+<span class="k">SELECT</span> 
+        <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+        <span class="n">shard_number</span><span class="p">,</span> 
+        <span class="n">stage</span><span class="p">,</span>
+        <span class="n">launch_time</span><span class="p">,</span>
+        <span class="n">execution_time</span><span class="p">,</span> 
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"FAILED"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"FLAKE"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">flake</span><span class="p">,</span>
+        <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s2">"PASSED"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+    <span class="k">FROM</span>
+      <span class="p">(</span>
+        <span class="k">SELECT</span>  
+                <span class="n">test_suite_mapped_id</span><span class="p">,</span>  
+                <span class="n">shard_number</span><span class="p">,</span> 
+                <span class="n">stage</span><span class="p">,</span>
+                <span class="n">launch_time</span><span class="p">,</span>
+                <span class="n">execution_time</span><span class="p">,</span> 
+                <span class="k">IF</span><span class="p">((</span><span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">"FLAKE"</span><span class="p">,</span> <span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+                <span class="n">failed</span><span class="p">,</span>
+                <span class="n">passed</span>
+
+        <span class="k">FROM</span>
+        <span class="p">(</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">flaky</span> <span class="n">tests</span>
+         <span class="k">SELECT</span>    
+                   <span class="nf">count</span><span class="p">(</span><span class="n">test_suite_mapped_id</span><span class="p">)</span> <span class="k">as</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+                   <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="n">launch_time</span><span class="p">,</span>
+                   <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+                   <span class="k">FROM</span> <span class="n">google_dataset</span>
+                   <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+                   <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span>
+            <span class="p">)</span> <span class="k">AS</span> <span class="n">T</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span>
+        <span class="k">Union</span> <span class="k">ALL</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">failing</span> <span class="n">tests</span>
+          <span class="k">SELECT</span> 
+                <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+                <span class="n">shard_number</span><span class="p">,</span>
+                <span class="n">stage</span><span class="p">,</span>
+                <span class="n">launch_time</span><span class="p">,</span>
+                <span class="n">execution_time</span><span class="p">,</span>
+                <span class="k">IF</span><span class="p">((</span><span class="n">passed</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">"FAILED"</span><span class="p">,</span> <span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+                <span class="n">failed</span><span class="p">,</span>
+                <span class="n">passed</span>
+         <span class="k">FROM</span>
+          <span class="p">(</span>
+            <span class="k">SELECT</span> 
+                   <span class="nf">count</span><span class="p">(</span><span class="n">test_suite_mapped_id</span><span class="p">)</span> <span class="k">as</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span> 
+                   <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="n">launch_time</span><span class="p">,</span>
+                   <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+                   <span class="k">FROM</span> <span class="n">google_dataset</span>
+                   <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+                 <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span>
+            <span class="p">)</span> <span class="k">AS</span> <span class="n">R</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">&gt;</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span>
+       <span class="k">UNION</span> <span class="k">ALL</span>
+         <span class="o">//</span><span class="n">computation</span> <span class="n">of</span> <span class="n">passing</span> <span class="n">tests</span>
+          <span class="k">SELECT</span> 
+                <span class="n">test_suite_mapped_id</span><span class="p">,</span>
+                <span class="n">shard_number</span><span class="p">,</span>
+                <span class="n">stage</span><span class="p">,</span>
+                <span class="n">launch_time</span><span class="p">,</span>
+                <span class="n">execution_time</span><span class="p">,</span>
+                <span class="k">IF</span><span class="p">((</span><span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">"PASSED"</span><span class="p">,</span> <span class="s2">"NONE"</span><span class="p">)</span> <span class="k">AS</span> <span class="n">test_status</span><span class="p">,</span>
+                <span class="n">failed</span><span class="p">,</span>
+                <span class="n">passed</span>
+          <span class="k">FROM</span>
+          <span class="p">(</span>
+            <span class="k">SELECT</span> 
+                   <span class="nf">count</span><span class="p">(</span><span class="n">test_suite_mapped_id</span><span class="p">)</span> <span class="k">as</span> <span class="n">test_suite_mapped_id</span><span class="p">,</span>  
+                   <span class="n">shard_number</span><span class="p">,</span> 
+                   <span class="n">stage</span><span class="p">,</span>
+                   <span class="n">launch_time</span><span class="p">,</span>
+                   <span class="n">execution_time</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'FAILED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">failed</span><span class="p">,</span> 
+                   <span class="nf">SUM</span><span class="p">(</span><span class="k">IF</span><span class="p">(</span><span class="n">test_status</span> <span class="o">=</span> <span class="s1">'PASSED'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="k">AS</span> <span class="n">passed</span>
+                   <span class="k">FROM</span> <span class="n">google_dataset</span>
+                   <span class="k">WHERE</span> <span class="n">stage</span> <span class="o">=</span> <span class="s2">"POST"</span>
+                 <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span>
+             <span class="p">)</span> <span class="k">AS</span> <span class="n">P</span>
+                <span class="k">WHERE</span> <span class="n">passed</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">AND</span> <span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span>
+               <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">test_suite_mapped_id</span>
+       <span class="p">)</span> <span class="k">AS</span> <span class="n">MM</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="nf">Day</span><span class="p">(</span><span class="n">launch_time</span><span class="p">)</span>
+<span class="p">)</span> <span class="k">AS</span> <span class="n">RRR</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="nf">Day</span><span class="p">(</span><span class="n">launch_time</span><span class="p">);</span>
+</pre></div>
+
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Results:</strong></p>
+
+<p><a href="https://camo.githubusercontent.com/f24bdedc23e95b99c3e1a10af35bd36ecc2d0844/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f746f74616c5f746573745f657865637574696f6e735f7065725f6461795f726573756c74732e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/f24bdedc23e95b99c3e1a10af35bd36ecc2d0844/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f746f74616c5f746573745f657865637574696f6e735f7065725f6461795f726573756c74732e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/july_29_2014/total_test_executions_per_day_results.jpg" style="max-width:100%;"></a></p>
+
+<p><img class="emoji" title=":small_red_triangle_down:" alt=":small_red_triangle_down:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f53b.png" height="20" width="20" align="absmiddle"><strong>Graph Representation:</strong></p>
+
+<p><a href="https://camo.githubusercontent.com/9fe824440d3942de3701cfc8c38b770446edc17d/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f746f74616c5f746573745f657865637574696f6e735f7065725f6461795f67726170682e6a7067" target="_blank"><img src="https://camo.githubusercontent.com/9fe824440d3942de3701cfc8c38b770446edc17d/687474703a2f2f7272657a617274612d6b7261736e6971692e6769746875622e696f2f6a756c795f32395f323031342f746f74616c5f746573745f657865637574696f6e735f7065725f6461795f67726170682e6a7067" alt="Alt text" data-canonical-src="http://rrezarta-krasniqi.github.io/july_29_2014/total_test_executions_per_day_graph.jpg" style="max-width:100%;"></a></p>
+
+<hr><p><img class="emoji" title=":copyright:" alt=":copyright:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/00a9.png" height="20" width="20" align="absmiddle"> Rrezarta Krasniqi - University of Nebraska - Lincoln</p></body></html>
