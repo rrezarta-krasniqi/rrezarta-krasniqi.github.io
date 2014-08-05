@@ -810,7 +810,7 @@ GROUP BY DAY(launch_time);
 ![Alt text](http://rrezarta-krasniqi.github.io/august_5_2014/total_test_executions_per_day_(fail)_results.jpg)
 
 
-![Alt text](http://rrezarta-krasniqi.github.io/august_5_2014/total_test_executions_per_day_graph_(pass_fail)_results.jpg)
+![Alt text](http://rrezarta-krasniqi.github.io/august_5_2014/total_test_executions_per_day_(pass_fail)_results.jpg)
 
 
 :small_red_triangle_down: **Graph Representation:**
