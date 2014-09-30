@@ -537,7 +537,7 @@ ORDER BY test_language, test_size ASC
 
 :small_red_triangle_down: **Graph Representation:**
 
-![Alt text](http://rrezarta-krasniqi.github.io/git/group_by_lang_size_stage_graph.jpg)
+![Alt text](http://rrezarta-krasniqi.github.io/git/september_30_2014/group_by_lang_size_stage_graph.jpg)
 
 
 <br>
