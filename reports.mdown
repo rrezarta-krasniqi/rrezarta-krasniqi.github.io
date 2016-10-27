@@ -1,4 +1,4 @@
-[//]: <> ![Alt text](http://rrezarta-krasniqi.github.io/esquared.jpg) 
+<!--- ![Alt text](http://rrezarta-krasniqi.github.io/esquared.jpg) -->
 <hr>
 
 ## Online Appendix
