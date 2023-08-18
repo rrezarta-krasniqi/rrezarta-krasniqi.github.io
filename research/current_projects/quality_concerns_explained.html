@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Rrezarta Krasniqi | Project</title>
+<link type="text/css" href="../../styles.css" rel="stylesheet" />
+<link rel="shortcut icon" type="image/x-icon" href="../../images/r.k_icon.png" />
+</head>
+
+<body>
+<div id="wrap">
+  <div class="header">
+    <h1 style="margin-left: -10px; width: 1200px;"><a style="text-decoration:none;"
+            href="mailto:Rrezarta.Krasniqi@unt.edu" title="rrezarta_krasniqi_email"
+            target="_blank">Rrezarta Krasniqi</a></h1>
+    <h3 style="margin-left: -0px;">Department of Computer Science and Engineering</h3>
+    <h3 style="margin-left: -0px;">University of North Texas</h3>
+  </div>
+  <div id="nav">
+    <ul>
+      <li class="selected"><a target="_top" title="home" href="../../index.html"
+              onmouseout="this.style.color='#92150F'" onmouseover="this.style.color='#000'"><span>Home</span></a></li>
+      <li class="selected"><a target="_top" title="research" href="../../research/current_past_projects.html"
+              onmouseout="this.style.color='#92150F'" onmouseover="this.style.color='#000'"><span>Research</span></a></li>
+      <li class="selected"><a target="_top" title="publications" href="../../publications/all_publications.html"
+              onmouseout="this.style.color='#92150F'" onmouseover="this.style.color='#000'"><span>Publications</span></a></li>
+      <li class="selected"><a target="_top" title="teaching" href="../../teaching/teaching.html"
+              onmouseout="this.style.color='#92150F'" onmouseover="this.style.color='#000'"><span>Teaching</span></a></li>
+      <li class="selected"><a target="_top" title="awards" href="../../awards/awards.html"
+              onmouseout="this.style.color='#92150F'" onmouseover="this.style.color='#000'"><span>Awards</span></a></li>
+      <li class="selected"><a target="_top" title="service" href="../../service/service.html"
+              onmouseout="this.style.color='#92150F'" onmouseover="this.style.color='#000'"><span>Service</span></a></li>
+      <li class="selected"><a target="_top" title="service" href="../../talks/talks.html"
+              onmouseout="this.style.color='#92150F'" onmouseover="this.style.color='#000'"><span>Talks</span></a></li>
+      <li class="selected"><a onmouseover="this.style.color='#000'" onmouseout="this.style.color='#92150F'"
+              href="../../cv/krasniqi_cv.pdf" title="Rrezarta Krasniqi-CV" target="_blank"><span>CV</span></a></li>
+    </ul>
+  </div>
+  <div class="page">
+    <div class="content">
+      <h3> Quality Concerns Explained: Generating Rationals via Code Change History</h3>
+      <br>
+      <p class="border"><strong><i>Project Description.</i></strong> In most
+        product-oriented approaches a complete analysis of requirements is
+        performed by considering functional requirements while neglecting
+        quality concerns until the implementation stage. Consequently,
+        quality concerns are implicitly and without proper analysis are
+        implemented in code. This problem becomes even more evident for OSS
+        projects since they typically emerge from frustrating experiences of
+        OSS contributors when a bug is communicated or new feature is added.
+        Because these qualities lack a formalized requirement, they tend to
+        be implemented with no particular structure, scattered and/or
+        tangled in code. Unlike functional requirements, which can be
+        achieved by relatively localized changes made to the data or control
+        flow, this is not the case with quality concerns in OSS systems.
+        Quality concern are often times bounded by system-wide constraints
+        that impact several classes across the system’s architecture. For
+        example, an availability requirement discovered later in the
+        implementation stage may affect the entire architecture unfavorably.
+        Similarly, adding or changing qualities pertaining to security or
+        performance may require system-wide changes due to their
+        dependencies. In this paper we present an NLP based approach for
+        detecting quality-related concerns latent in code. Furthermore, we
+        provide a holistic view of their role at the low level
+        implementation by visualizing them in code. We introduce a tool
+        named SoftQualDetector which utilizes three unsupervised techniques
+        for extracting a rich set of semantic, structural, and feature-based
+        keywords to form short keyword summaries extracted from code. These
+        keyword summaries are generated in the context of informativeness,
+        importance, specificity, and relevance to domain. SoftQualDetector
+        is compared against six baseline approaches including against the
+        state-of-the-art LDA. Results indicate that SoftQualDetector
+        outperforms these approaches significantly. We highlight several
+        benefits of SoftQualDetector if put in practice. We provide examples
+        where SoftQualDetector can contribute towards enhancing developers'
+        productivity by communicating requirement knowledge, scoping
+        requirement knowledge, and visualizing quality concerns.</p>
+      <p class="border"><img border="0" alt="approach" title="SoftQualDetector Tool"
+            style="border: 0px solid white; width: 740px; height: 360px;  margin-left: -10px; 
+			margin-right: -10px; margin-top: -10px; margin-bottom: -10px;" src="../project_images/soft_qual_detector_tool.png"/></p>
+    </div>
+    <div class="sidebar">
+      <div class="title">
+        <h4 align="center">Current Research Projects</h4>
+      </div>
+      <ul>
+        <!--<li><a class="highlight" target="_top" title="quality_concerns_explained." href="current_projects/quality_concerns_explained.html">
+				Quality Concerns Explained: Generating Rationales via Code Change History</a> </li>-->
+        
+        <li><a class="highlight" target="_top" title="soft_qual_topic_detector_tool" href="soft_qual_topic_detector_tool.html"> Towards Semantically Enhanced Detection of Emerging Quality Concerns in Source Code</a></li>
+        <li><a class="highlight" target="_top" title="extension" href="quality_concern_bug_report_classifier_tool_journal_extension.html"> A Multi-Model Framework for Semantically Enhancing Detection of Quality Bug Reports</a></li>
+        <li><a class="highlight" target="_top" title="soft_qual_detector_tool" href="soft_qual_detector_tool.html"> Hierarchical &amp; Context-Aware Clustering of Quality Concerns in Support of Bug Repair</a></li>
+        <li><a class="highlight" target="_top" title="bug_report_qual_classifier" href="bug_report_qual_classifier.html"> Automatically Capturing Quality Concerns in Bug Report Descriptions for Bug Triaging</a></li>
+        <li><a class="highlight" target="_top" title="case_study_quality_concerns" href="case_study_quality_concerns.html"> A Case Study: Towards Integration of Team Vocabulary for Demarcating Requirements</a></li>
+        <li><a class="highlight" target="_top" title="survey_quality_concerns" href="survey_study_quality_concerns.html"> A Survey: Challenges in Exploring Quality Concerns during Software Development</a></li>
+      </ul>
+    </div>
+    <div class="sidebar">
+      <div class="title">
+        <h4 align="center"> Past Research Projects</h4>
+      </div>
+      <ul>
+        <li><a href="../past_projects/quality_concern_bug_report_classifier_tool.html"
+					title="quality_concern_bug_report_classifier_tool" target="_top" 
+					class="highlight">Detecting Emerging Quality-Related Concerns in Defect Reports</a></li>
+        <li><a href="../past_projects/retro_rank_tool.html" title="retro_rank_tool" target="_top"
+					class="highlight">Recommending Bug-fixing Comments in Support of Bug Repair</a></li>
+        <li><a href="../past_projects/enhancing_refactoring_explanations_project.html" title="commit_miner" target="_top"
+					class="highlight">Enhancing Code Refactorings with Explanations from Commit Messages</a></li>
+        <li><a href="../past_projects/tracelab_project.html" title="tracelab_project" target="_top"
+					class="highlight">TraceLab: Software Traceability Instrumentation</a></li>
+      </ul>
+    </div>
+    <div class="footer">
+      <p>Copyright © Rrezarta Krasniqi</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
