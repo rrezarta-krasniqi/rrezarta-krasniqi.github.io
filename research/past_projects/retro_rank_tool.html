@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Rrezarta Krasniqi | Project-RetroRank</title>
+<link type="text/css" href="../../styles.css" rel="stylesheet" />
+<link rel="shortcut icon" type="image/x-icon" href="../../images/r.k_icon.png" />
+</head>
+
+<body>
+<div id="wrap">
+  <div class="header">
+    <h1 style="margin-left: -10px; width: 1200px;"><a style="text-decoration:none;"
+            href="mailto:Rrezarta.Krasniqi@unt.edu" title="rrezarta_krasniqi_email" target="_blank">Rrezarta Krasniqi</a></h1>
+    <h3 style="margin-left: -0px;">Department of Computer Science and Engineering</h3>
+    <h3 style="margin-left: -0px;">University of North Texas</h3>
+  </div>
+  <div id="nav">
+    <ul>
+      <li class="selected"><a onmouseover="this.style.color='#000'" onmouseout="this.style.color='#92150F'"
+              href="../../index.html" title="home" target="_top"><span>Home</span></a></li>
+      <li class="selected"><a onmouseover="this.style.color='#000'" onmouseout="this.style.color='#92150F'"
+              href="../../research/current_past_projects.html" title="research" target="_top"><span>Research</span></a></li>
+      <li class="selected"><a onmouseover="this.style.color='#000'" onmouseout="this.style.color='#92150F'"
+              href="../../publications/all_publications.html" title="publications" target="_top"><span>Publications</span></a></li>
+      <li class="selected"><a onmouseover="this.style.color='#000'" onmouseout="this.style.color='#92150F'"
+              href="../../teaching/teaching.html" title="teaching" target="_top"><span>Teaching</span></a></li>
+      <li class="selected"><a onmouseover="this.style.color='#000'" onmouseout="this.style.color='#92150F'"
+              href="../../awards/awards.html" title="awards" target="_top"><span>Awards</span></a></li>
+      <li class="selected"><a onmouseover="this.style.color='#000'" onmouseout="this.style.color='#92150F'"
+              href="../../service/service.html" title="service" target="_top"><span>Service</span></a></li>
+      <li class="selected"><a onmouseover="this.style.color='#000'" onmouseout="this.style.color='#92150F'"
+              href="../../talks/talks.html" title="talks" target="_top"><span>Talks</span></a></li>
+      <li class="selected"><a target="_blank" title="Rrezarta Krasniqi-CV" href="../../cv/krasniqi_cv.pdf"
+              onmouseout="this.style.color='#92150F'" onmouseover="this.style.color='#000'"><span>CV</span></a></li>
+    </ul>
+  </div>
+  <div class="page">
+    <div class="content">
+      <h3>Recommending Bug-fixing Comments in Support of Bug Repair</h3>
+      <br>
+      <p class="border"><strong><i>Project Description.</i></strong> In
+        practice, developers search for related earlier bugs and their
+        associated discussion threads when faced with a new bug to repair.
+        Typically, these discussion threads consist of comments and even <em>bug-fixing
+        comments</em> intended to capture clues for facilitating the
+        investigation and root cause of a new bug report. Over time, these
+        discussions can become extensively lengthy and difficult to
+        understand. Inevitably, these discussion threads lead to instances
+        where bug-fixing comments intermingle with seemingly-unrelated
+        comments. This task, however, poses further challenges when dealing
+        with high volumes of bug reports. Large software systems are plagued
+        by thousands of bug reports daily. Hence, it becomes time-consuming
+        to investigate these bug reports efficiently. To address this gap,
+        this paper builds a ranked-based automated tool that we refer it to
+        as RetroRank. Specifically, RetroRank recommends bug-fixing comments
+        from issue tracking discussion threads in the context of user <em>query
+        relevance</em>, the use of <em>positive language</em>, and <em>semantic
+        relevance</em> among comments. By using a combination of Vector
+        Space Model (VSM), Sentiment Analysis (SA), and the TextRank Model
+        (TR) we show how that past fixed bugs and their associated
+        bug-fixing comments with relatively positive sentiments can
+        semantically connect to investigate the root cause of a new bug. We
+        evaluated our approach via a synthetic study and a user study.
+        Results indicate that RetroRank significantly improved performance
+        when compared to the baseline VSM.</p>
+      <p class="border"><img border="0" align="left" title="retrorank" alt="approach" src="../project_images/retrorank_tool.png"
+            style="border: 0px solid white; width: 745px; height: 222px; margin-left: -10px; margin-right: -10px; margin-top: -10px; margin-bottom: -10px;"/></p>
+    </div>
+    <div class="sidebar">
+      <div class="title">
+        <h4 align="center">Current Research Projects</h4>
+      </div>
+      <ul>
+        <!--<li><a class="highlight" target="_top" title="quality_concerns_explained."
+                href="../current_projects/quality_concerns_explained.html">
+                Quality Concerns Explained: Generating Rationales via Code Change History</a></li>-->
+        
+        <li><a class="highlight" target="_top" title="soft_qual_topic_detector_tool"
+                href="../current_projects/soft_qual_topic_detector_tool.html"> Towards Semantically Enhanced Detection of Emerging Quality Concerns in Source Code</a></li>
+        <li><a class="highlight" target="_top" title="quality_concern_bug_report_classifier_tool_journal_extension"
+                href="../current_projects/quality_concern_bug_report_classifier_tool_journal_extension.html"> A Multi-Model Framework for Semantically Enhancing Detection of Quality Bug Reports</a></li>
+        <li><a class="highlight" target="_top" title="soft_qual_detector_tool"
+                href="../current_projects/soft_qual_detector_tool.html"> Hierarchical &amp; Context-Aware Clustering of Quality Concerns in Support of Bug Repair</a></li>
+        <li><a class="highlight" target="_top" title="bug_report_qual_classifier"
+                href="../current_projects/bug_report_qual_classifier.html"> Automatically Capturing Quality Concerns in Bug Report Descriptions for Bug Triaging</a></li>
+        <li><a class="highlight" target="_top" title="case_study_quality_concerns"
+                href="../current_projects/case_study_quality_concerns.html"> A Case Study: Towards Integration of Team Vocabulary for Demarcating Requirements</a></li>
+        <li><a class="highlight" target="_top" title="case_study_quality_concerns"
+                href="../current_projects/survey_study_quality_concerns.html"> A Survey: Challenges in Exploring Quality Concerns during Software Development</a></li>
+      </ul>
+    </div>
+    <div class="sidebar">
+      <div class="title">
+        <h4 align="center">Past Research Projects</h4>
+      </div>
+      <ul>
+        <li><a href="quality_concern_bug_report_classifier_tool.html" title="quality_concern_bug_report_classifier_tool"
+                target="_top" class="highlight">Detecting Emerging Quality-Related Concerns in Defect Reports</a></li>
+        <li><a href="retro_rank_tool.html" title="retro_rank_tool" target="_top"
+                class="highlight">Recommending Bug-fixing Comments in Support of Bug Repair</a></li>
+        <li><a href="enhancing_refactoring_explanations_project.html" title="enhancing_refactoring_explanations"
+                target="_top" class="highlight">Enhancing Code Refactorings with Explanations from Commit Messages</a></li>
+        <li><a href="tracelab_project.html" title="tracelab_project" target="_top"
+                class="highlight">TraceLab: Software Traceability Instrumentation</a></li>
+      </ul>
+    </div>
+    <div class="footer">
+      <p>Copyright © Rrezarta Krasniqi</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
