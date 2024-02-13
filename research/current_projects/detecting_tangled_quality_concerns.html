@@ -43,44 +43,21 @@
   </div>
   <div class="page">
     <div class="content" style="text-align:justify">
-      <h3>Towards Semantically Enhanced Detection of Quality Concerns in Source Code</h3>
+      <h3>Automatically Detecting Tangled Quality Concerns across Code-Commit Changesets</h3>
       <p style="height: 2px;"><br />
       </p>
       <p class="border"><strong><i>Project Description.</i></strong>
-        Quality concerns defined by ISO/IEC 9126 that focus on the quality
-        aspect of the product such as efficiency, usability, and security,
-        among other, tend to be neglected until they are retrofitted later
-        at the implementation level. This retrofitted strategy poses a major
-        challenge and hinders developers from efficiently detecting and
-        understanding quality concerns because they are frequently
-        implemented with no particular structure and are bound to low
-        cohesion (qualities <em>scattered</em> across the codebase). To
-        address these problems, we propose an alternative approach for
-        detecting scattered quality-related content in the codebase. We
-        introduce SoftQualDetector, a lightweight framework that combines three unsupervised
-        techniques for extracting a rich-set of logical text units from the
-        code from the context of <em>semantics</em>, <em>importance</em>,
-        and <em>textual features</em> to detect quality-related classes and
-        generate short keyword summaries pertaining to quality-related
-        classes. SoftQualDetector also provides a 3D visualization for
-        monitoring automated detected quality-related concerns across the
-        codebase so that developers can easily locate the emerging quality
-        concerns and the associated classes. Our evaluation of 1,248
-        annotated Java classes shows that SoftQualDetector outperforms
-        several state-of-the-art methods.</p>
-      <p class="border"><img border="0" alt="approach" title="SoftQualDetector Tool"
-            style="border: 0px solid white; width: 745px; height: 370px;  margin-left: -10px; 
-			margin-right: -10px; margin-top: -10px; margin-bottom: -15px;" src="../project_images/soft_qual_detector_tool.png"/></p>
+        Software <em>quality concerns</em> such as usability, security, and performance, among others, lay the foundation necessary to achieve high-quality, robust, user-friendly, and trustworthy software systems. When software maintenance changes occur, developers often commit these changes along with functional changes. This generally happens because quality attributes have a broad impact across architectural design and implementation. Tracking changes associated with quality concerns can be a challenging and overwhelming manual task. Developers frequently make a substantial number of code commits, especially during major code releases and system upgrades. Consequently, monitoring changes specifically linked to quality concerns becomes impractical, particularly when intertwined with functional-related changes. To address this issue, we have developed a novel approach for automatically untangling quality-related changes from functional-related changes when they are integrated as a single commit. Our underlying approach involves identifying structural dependency relations of code components using impact analysis techniques and then incorporate several unsupervised techniques to extract quality-related changes. To validate our approach, we conducted an empirical evaluation on 1,246 commits from eight open-source Java projects. The results indicate that our approach can detect tangled quality concerns across code commit changesets with an accuracy ranging from 55.99% to 85.71%. Additionally, our findings reveal that changes related to 'efficiency,' 'usability,' and 'reliability' exhibit the highest degree of entanglement, ranging from 12% to 18%.</p>
     </div>
     <div class="sidebar">
       <div class="title">
         <h4 align="center"> Current Research Projects</h4>
       </div>
       <ul>
-
+       
         <li><a class="highlight" target="_top" title="detecting_tangled_quality_concerns" 
       href="detecting_tangled_quality_concerns.html">Automatically Detecting Tangled Quality Concerns across Code-Commit Changeset</a></li>
-
+        
         <li><a class="highlight" target="_top" title="soft_qual_topic_detector_tool"
 			href="soft_qual_topic_detector_tool.html">Towards Semantically Enhanced Detection of Emerging Quality Concerns in Source Code</a></li>
 		  
