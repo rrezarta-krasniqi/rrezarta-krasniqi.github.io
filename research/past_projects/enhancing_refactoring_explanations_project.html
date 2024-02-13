@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>Rrezarta Krasniqi | Project </title>
+<title>Rrezarta Krasniqi | Project</title>
 <link rel="stylesheet" href="../../styles.css" type="text/css" />
 <link rel="shortcut icon" type="image/x-icon" href="../../images/r.k_icon.png" />
 </head>
@@ -43,54 +43,63 @@
   </div>
   <div class="page">
     <div class="content">
-      <h3>Enhancing Code Refactorings with Explanations from Commit Messages</h3>
+		
+      <h3>Detecting Emerging Quality-Related Concerns in Defect Reports</h3>
       <br>
-      <p class="border"><a target="_top" title="home" href="../../index.html"> <img border="0" align="left" class="centered" title="refactoring_commit" 
-		   alt="approach" src="../project_images/architecture_refactoring_commit.png" 
-		   style="border: 0px solid white; width: 336px; height: 157px; margin-left: -1px;"/></a>
-		<strong><i>Project Description.</i></strong> We investigate the extent to which
-        code commit summaries provide rationales of code refactorings. We
-        present a structural-based refactoring tool CMMiner that detects in
-        code commit messages diverse refactoring patterns. We also explore
-        whether refactoring information mined from commit messages using
-        CMMiner, can be combined with refactoring descriptions mined from
-        source code using the well-known RMiner tool. For six refactoring
-        types covered by both CMMiner and RMiner, we observed 21.96% to
-        38.59% overlap of refactorings detected across four open-source
-        systems. RMiner identified approximately 49.13% to 60.29% of
-        refactorings missed by CMMiner, primarily because developers often
-        failed to describe code refactorings that occurred alongside other
-        code changes. CMMiner identified 10.30% to 19.51% of refactorings
-        missed by RMiner, primarily when refactorings occurred across
-        multiple commits. Our results suggest that integrating both
-        approaches can enhance the completeness of refactoring detection and
-        provide refactoring rationales.</p>
-    </div>
-	  
+      <p class="border"><strong><i>Project Description.</i></strong> 
+		Quality-related concerns are often coined with the terms
+        non-functional requirements, architecturally significant
+        requirements, and quality attributes. Collectively, these qualities
+        affect non-behavioral concerns of the software system such as
+        reliability, usability, security, or maintainability among others.
+        As a byproduct of a long-term maintenance effort, these system
+        qualities tend to erode over time, causing system-wide failures that
+        emerge via <em>quality-related bugs</em>. Quality-related bugs can
+        have a detrimental impact on system's sustained stability and can
+        chiefly hinder its core functionality. Typically, for the
+        developers, to manually examine these high-impacted quality-related
+        bugs can become prohibitively expensive and impractical task to
+        attain. This is often a case with bugs that are reported from medium
+        or large-sized projects such as Eclipse. To alleviate this problem,
+        we built a quality-based classifier to automatically detect these
+        emerging quality-related concerns from textual descriptions of bug
+        report summaries. Specifically, we leveraged a weighted combination
+        of <em>semantics</em>, <em>lexical</em>, and <em>shallow</em> 
+		  features in conjunction with the <em>Random Forest</em> ensemble
+        learning method. Finally, we discuss the practical applicability of
+        our classifier for mapping and visualizing quality-related concerns
+        into the codebase with an example from the Derby project. To
+        summarize, this work represents an effort and an early awareness to
+        improve the underlying management of tracking systems and
+        stakeholder requirements in open-source communities.<br></p>
+      <p class="border"><strong><i>
+    <img src="../project_images/architecture_refactoring_commit.png" style="border: 0px solid white; width: 421px; height: 204px; margin-left: 140px;"/></div></i></strong></p>
+
     <div class="sidebar">
-      <div class="title"><h4 align="center">Current Research Projects</h4></div>
+      <div class="title"><h4 align="center"> Current Research Projects</h4></div>
 		
       <ul>
-        <!--<li><a class="highlight" target="_top" title="quality_concerns_explained." href="../current_projects/quality_concerns_explained.html">
-             Quality Concerns Explained: Generating Rationales via Code Change History</a></li>-->
         
-        <li><a class="highlight" target="_top" title="soft_qual_topic_detector_tool" 	        
-			href="../current_projects/soft_qual_topic_detector_tool.html">Towards Semantically Enhanced Detection of Emerging Quality Concerns in Source Code</a></li>
+        <li><a class="highlight" target="_top" title="detecting_tangled_quality_concerns" 
+                href="../current_projects/detecting_tangled_quality_concerns.html">Automatically Detecting Tangled Quality Concerns across Code-Commit Changeset</a></li>
+        
+        <li><a class="highlight" target="_top" title="soft_qual_topic_detector_tool"
+                href="../current_projects/soft_qual_topic_detector_tool.html">Towards Semantically Enhanced Detection of Emerging Quality Concerns in Source Code</a></li>
 		  
         <li><a class="highlight" target="_top" title="quality_concern_bug_report_classifier_tool_journal_extension"
-            href="../current_projects/quality_concern_bug_report_classifier_tool_journal_extension.html">A Multi-Model Framework for Semantically Enhancing Detection of Quality Bug Reports</a></li>
+                href="../current_projects/quality_concern_bug_report_classifier_tool_journal_extension.html">A Multi-Model Framework for Semantically Enhancing Detection of Quality Bug Reports</a></li>
 		  
         <li><a class="highlight" target="_top" title="soft_qual_detector_tool"
-             href="../current_projects/soft_qual_detector_tool.html">Hierarchical &amp; Context-Aware Clustering of Quality Concerns in Support of Bug Repair</a></li>
+                href="../current_projects/soft_qual_detector_tool.html">Hierarchical &amp; Context-Aware Clustering of Quality Concerns in Support of Bug Repair</a></li>
 		  
         <li><a class="highlight" target="_top" title="bug_report_qual_classifier"
-             href="../current_projects/bug_report_qual_classifier.html">Automatically Capturing Quality Concerns in Bug Report Descriptions for Bug Triaging</a></li>
+                href="../current_projects/bug_report_qual_classifier.html">Automatically Capturing Quality Concerns in Bug Report Descriptions for Bug Triaging</a></li>
 		  
         <li><a class="highlight" target="_top" title="case_study_quality_concerns"
-             href="../current_projects/case_study_quality_concerns.html">A Case Study: Towards Integration of Team Vocabulary for Demarcating Requirements</a></li>
+                href="../current_projects/case_study_quality_concerns.html">A Case Study: Towards Integration of Team Vocabulary for Demarcating Requirements</a></li>
 		  
         <li><a class="highlight" target="_top" title="survey_quality_concerns"
-            href="../current_projects/survey_study_quality_concerns.html">A Survey: Challenges in Exploring Quality Concerns during Software Development</a></li>
+                href="../current_projects/survey_study_quality_concerns.html">A Survey: Challenges in Exploring Quality Concerns during Software Development</a></li>
       </ul>
     </div>
 	  
@@ -101,14 +110,14 @@
         <li><a href="quality_concern_bug_report_classifier_tool.html" title="quality_concern_bug_report_classifier_tool"
             target="_top" class="highlight">Detecting Emerging Quality-Related Concerns in Defect Reports</a></li>
 		  
-        <li><a class="highlight" title="retro_rank_tool" 
-		    target="_top" href="retro_rank_tool.html">Recommending Bug-fixing Comments in Support of Bug Repair</a></li>
+        <li><a href="retro_rank_tool.html" title="retro_rank_tool" target="_top"
+            class="highlight">Recommending Bug-fixing Comments in Support of Bug Repair</a></li>
 		  
-        <li><a href="enhancing_refactoring_explanations_project.html" title="enhancing_refactoring_explanations"
-            target="_top" class="highlight">Enhancing Code Refactorings with Explanations from Commit Messages</a></li>
+        <li><a href="enhancing_refactoring_explanations_project.html" title="enhancing_refactoring_explanations" target="_top"
+            class="highlight">Enhancing Code Refactorings with Explanations from Commit Messages</a></li>
 		  
-        <li><a class="highlight" title="tracelab_project" href="tracelab_project.html" 
-			target="_top">TraceLab: Software Traceability Instrumentation</a></li>
+        <li><a href="tracelab_project.html" title="tracelab_project" target="_top"
+             class="highlight">TraceLab: Software Traceability Instrumentation</a></li>
       </ul>
     </div>
     <div class="footer">
